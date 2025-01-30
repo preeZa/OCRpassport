@@ -1,0 +1,156 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".component.camaraPreviewActivity">
+
+    <!-- Layout สำหรับกล้อง -->
+    <LinearLayout
+        android:id="@+id/camaraLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- Preview View สำหรับแสดงภาพจากกล้อง -->
+            <androidx.camera.view.PreviewView
+                android:id="@+id/previewView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- CodeScannerView สำหรับสแกนโค้ด -->
+            <com.budiyev.android.codescanner.CodeScannerView
+                android:id="@+id/scanner_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:autoFocusButtonColor="@android:color/white"
+                app:autoFocusButtonVisible="false"
+                app:flashButtonColor="@android:color/white"
+                app:flashButtonVisible="false"
+                app:frameColor="@android:color/white"
+                app:frameCornersSize="40dp"
+                app:frameCornersRadius="7dp"
+                app:frameAspectRatioWidth="0.8"
+                app:frameAspectRatioHeight="0.6"
+                app:frameSize="0.90"
+                app:frameThickness="4dp"
+                app:frameVerticalBias="0.5"
+                app:maskColor="#77000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center"
+                android:layout_marginTop="20dp"
+                android:text="Scan"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="180dp"
+                android:text="Please place the side of the document with MRZ information in the frame"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                android:textAlignment="center"/>
+            <!-- Countdown Timer -->
+            <FrameLayout
+                android:id="@+id/scan_frame"
+                android:layout_width="370dp"
+                android:layout_height="275dp"
+                android:layout_gravity="center">
+
+                <!-- เส้นที่เลื่อนผ่านสำหรับการสแกน -->
+                <View
+                    android:id="@+id/scan_line"
+                    android:layout_width="295dp"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center_horizontal|top"
+                    android:layout_marginTop="9dp"
+                    android:alpha="0.7"
+                    android:background="@color/white" />
+
+                <!-- TextView สำหรับนับถอยหลัง -->
+                <TextView
+                    android:id="@+id/countdownTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="10"
+                    android:textColor="@android:color/white"
+                    android:textSize="48sp"
+                    android:textStyle="bold" />
+
+                <!-- กรอบด้านล่าง -->
+                <View
+                    android:layout_width="330dp"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center_horizontal|bottom"
+                    android:layout_marginBottom="50dp"
+                    android:alpha="0.7"
+                    android:background="@color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|bottom|right"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginBottom="18dp"
+                    android:text="&lt; &lt; &lt;"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+            </FrameLayout>
+<!--            <Button-->
+<!--                android:id="@+id/closeCamaraBtn"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="bottom|center"-->
+<!--                android:layout_marginBottom="16dp"-->
+<!--                android:backgroundTint="@color/green"-->
+<!--                android:elevation="2dp"-->
+<!--                android:text="Close Camera"-->
+<!--                android:textColor="@android:color/white" />-->
+
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Layout สำหรับการโหลด -->
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimation"
+            android:layout_width="wrap_content"
+            android:layout_height="166dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/wait_animation2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/adlam_display"
+            android:text="Reading information"
+            android:textColor="@color/green"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
