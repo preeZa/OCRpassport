@@ -166,7 +166,6 @@ class camaraPreviewActivity : AppCompatActivity() {
             try {
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
                 preview.surfaceProvider = previewView.surfaceProvider
-                // Additional setup for analyzing
                 Handler(mainLooper).postDelayed({
                     isReadyToAnalyze = true
                     Toast.makeText(this, "Start process image", Toast.LENGTH_SHORT).show()
