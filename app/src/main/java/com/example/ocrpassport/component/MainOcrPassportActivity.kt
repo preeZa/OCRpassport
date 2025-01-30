@@ -40,8 +40,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
 
     private lateinit var mrzData: MRZData
 
-    private var isProcessing = false
-    private var isCameraRealTime: Boolean = false
     private var isLoading: Boolean = false
         set(value) {
             field = value
@@ -164,7 +162,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val intent = Intent(this, camaraPreviewActivity::class.java)
-        activityResultLauncher.launch(intent) // เปิดหน้าใหม่และรอผลลัพธ์
+        activityResultLauncher.launch(intent)
     }
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -207,7 +205,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
             contentLayout.visibility = View.GONE
 
         } else {
-            lottieAnimation.cancelAnimation() // หยุดแอนิเมชัน
+            lottieAnimation.cancelAnimation()
             loadingLayout.visibility = View.GONE
             contentLayout.visibility = View.VISIBLE
         }
