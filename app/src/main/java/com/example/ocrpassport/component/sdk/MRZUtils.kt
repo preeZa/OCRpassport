@@ -92,7 +92,7 @@ object MRZUtils {
             val nextCentury = firstTwoDigits + 1     // 21 (ศตวรรษถัดไป)
 
             if (data.length != 6) {
-                throw IllegalArgumentException("วันที่ไม่ถูกต้อง: $data")
+                throw IllegalArgumentException("Invalid day: $data")
             }
 
             val birthYearPrefix = data.substring(0, 2).toInt()
@@ -116,10 +116,10 @@ object MRZUtils {
 
             // ตรวจสอบเดือนและวันที่ว่ามีค่าในช่วงที่ถูกต้องหรือไม่
             if (month.toInt() !in 1..12) {
-                throw IllegalArgumentException("เดือนไม่ถูกต้อง: $month")
+                throw IllegalArgumentException("Invalid month: $month")
             }
             if (day.toInt() !in 1..31) {
-                throw IllegalArgumentException("วันที่ไม่ถูกต้อง: $day")
+                throw IllegalArgumentException("Invalid day: $day")
             }
 
             // สร้างวันที่ในรูปแบบ yyyy-MM-dd
@@ -127,16 +127,16 @@ object MRZUtils {
             return formattedDate
 
         } catch (e: StringIndexOutOfBoundsException) {
-            Log.e("MRZUtils", "ข้อมูลไม่ครบถ้วน: ${e.message}")
+            Log.e("MRZUtils", "Incomplete data: ${e.message}")
             return ""
         } catch (e: NumberFormatException) {
-            Log.e("MRZUtils", "ไม่สามารถแปลงข้อมูลเป็นตัวเลข: ${e.message}")
+            Log.e("MRZUtils", "Cannot convert data to number: ${e.message}")
             return ""
         } catch (e: IllegalArgumentException) {
-            Log.e("MRZUtils", "ข้อผิดพลาด: ${e.message}")
+            Log.e("MRZUtils", "Error: ${e.message}")
             return ""
         } catch (e: Exception) {
-            Log.e("MRZUtils", "เกิดข้อผิดพลาดที่ไม่คาดคิด: ${e.message}")
+            Log.e("MRZUtils", "Unexpected error: ${e.message}")
             return ""
         }
 

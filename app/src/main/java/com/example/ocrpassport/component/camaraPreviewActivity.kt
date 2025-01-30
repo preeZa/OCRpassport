@@ -169,7 +169,7 @@ class camaraPreviewActivity : AppCompatActivity() {
                 // Additional setup for analyzing
                 Handler(mainLooper).postDelayed({
                     isReadyToAnalyze = true
-                    Toast.makeText(this, "เริ่มวิเคราะห์ภาพ", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Start process image", Toast.LENGTH_SHORT).show()
                 }, 10000)
 
                 Handler(mainLooper).postDelayed({
@@ -177,7 +177,7 @@ class camaraPreviewActivity : AppCompatActivity() {
                     isCameraRealTime = false
                     setResult(RESULT_CANCELED, resultIntent)
                     stopCamera()
-                }, 14000)
+                }, 20000)
 
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_LONG).show()

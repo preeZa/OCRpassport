@@ -138,11 +138,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
                         ocrPassportSDK.setOcrPassportUri(uri)
                     }
                     mrzData = ocrPassportSDK.getMrzData()!!
-                    if (mrzData != null) {
-                        println(mrzData.toString())
-                    } else {
-                        println("No MRZ data available")
-                    }
+                    println(mrzData.toString())
                     isLoading = false
                 } catch (e: Exception) {
                     // Handle exception
@@ -155,12 +151,8 @@ class MainOcrPassportActivity : AppCompatActivity() {
             try {
                 isLoading = true
                 ocrPassportSDK.setOcrPassportPath(path,1024,1024) // จะรอจนฟังก์ชันนี้ทำงานเสร็จ
-                val mrzData = ocrPassportSDK.getMrzData()
-//                if (mrzData != null) {
-//                    println("MRZ Data: ${mrzData.passportNumber}")
-//                } else {
-//                    println("No MRZ data available")
-//                }
+                mrzData = ocrPassportSDK.getMrzData()!!
+                println(mrzData.toString())
                 isLoading = false
             } catch (e: Exception) {
                 Log.e("GalleryImage", "Error processing image: ${e.message}", e)
