@@ -177,7 +177,7 @@ class camaraPreviewActivity : AppCompatActivity() {
                     isCameraRealTime = false
                     setResult(RESULT_CANCELED, resultIntent)
                     stopCamera()
-                }, 20000)
+                }, 14000)
 
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_LONG).show()
