@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
-import android.view.SurfaceView
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -73,23 +72,25 @@ class camaraPreviewActivity : AppCompatActivity() {
                     duration = 500
                     start()
                 }
-                countdownTextView.text = seconds.toString()
+                runOnUiThread {
+                    countdownTextView.text = seconds.toString()
+                }
             }
 
             override fun onFinish() {
                 countdownTextView.text = ""
             }
         }
-        parentView.viewTreeObserver.addOnGlobalLayoutListener {
-            val parentHeight = (parentView.height - 0.5 * 100).toInt()
+        parentView.post {
+            val parentHeight = (parentView.height - (0.5 * 100)).toInt()
             val scanLineHeight = scanLine.height
-
             val maxTranslationY = parentHeight - scanLineHeight.toFloat()
 
-            val animator = ObjectAnimator.ofFloat(scanLine, "translationY", 0f, maxTranslationY)
-            animator.duration = 1000
-            animator.repeatCount = ObjectAnimator.INFINITE
-            animator.repeatMode = ObjectAnimator.REVERSE
+            val animator = ObjectAnimator.ofFloat(scanLine, "translationY", 0f, maxTranslationY).apply {
+                duration = 1000  // เพิ่มเวลาเพื่อให้เคลื่อนที่ต่อเนื่องขึ้น
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.REVERSE
+            }
             animator.start()
         }
         countdownTimer.start()
@@ -189,7 +190,6 @@ class camaraPreviewActivity : AppCompatActivity() {
         cameraProvider.unbindAll()
         finish()
         isLoading = false
-
     }
     private fun updateLoadingState() {
         if (isLoading) {

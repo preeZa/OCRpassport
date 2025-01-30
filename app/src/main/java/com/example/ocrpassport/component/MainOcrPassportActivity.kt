@@ -30,7 +30,6 @@ import java.io.IOException
 class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
 
-    private lateinit var cameraImage: ImageView
     private lateinit var captureImgBtn: Button
     private lateinit var realTimeBtn: Button
     private lateinit var galleryImgBtn: Button
@@ -86,7 +85,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main_ocr_passport)
         ocrPassportSDK = OCRPassportSDK(this)
 
-        cameraImage = findViewById(R.id.cameraImage)
         captureImgBtn = findViewById(R.id.captureImgBtn)
         realTimeBtn = findViewById(R.id.realTimeBtn)
         galleryImgBtn = findViewById(R.id.galleryImgBtn)
