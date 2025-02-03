@@ -10,8 +10,8 @@ import androidx.camera.core.ImageProxy
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.component.sdk.ImageProcessor
 import com.example.ocrpassport.component.sdk.MRZUtils
+import com.example.ocrpassport.component.sdk.ModelPhone
 import com.example.ocrpassport.component.sdk.OpenCVInitializer
-import com.example.ocrpassport.component.sdk.modelPhone
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 
@@ -22,7 +22,7 @@ class OCRPassportSDK(private val context: Context) {
     private var mrzData: MRZData? = null
 
     init {
-        OpenCVInitializer.initialize(context)
+        OpenCVInitializer.initialize()
     }
 
     fun setCurrentPhotoPath(): File {
@@ -41,7 +41,7 @@ class OCRPassportSDK(private val context: Context) {
 
     suspend fun setOcrPassportUri(uri: Uri) {
         try {
-            withTimeout(5000) { // กำหนด timeout 5 วินาที
+            withTimeout(5000) {
                 val bitmap = ImageProcessor.uriToBitmap(context, uri)
                 if (bitmap != null) {
                     setMrz(bitmap)
@@ -57,14 +57,13 @@ class OCRPassportSDK(private val context: Context) {
     }
     suspend fun setOcrPassportPath(path: String, reqWidth: Int, reqHeight: Int) {
         try {
-            withTimeout(5000) { // Timeout 5 วินาที
+            withTimeout(5000) {
                 val bitmap = ImageProcessor.decodeSampledBitmapFromFile(path, reqWidth, reqHeight)
-                val image: Bitmap
 
-                if (modelPhone.isEDCorPhone()) {
-                    image = ImageProcessor.flipImage(bitmap, horizontal = true)
+                val image: Bitmap = if (ModelPhone.isEDCorPhone()) {
+                    ImageProcessor.flipImage(bitmap, horizontal = true)
                 } else {
-                    image = ImageProcessor.rotateImage(bitmap, clockwise = true, isEDC = false)
+                    ImageProcessor.rotateImage(bitmap, clockwise = true, isEDC = false)
                 }
                 setMrz(image)
             }
@@ -86,16 +85,12 @@ class OCRPassportSDK(private val context: Context) {
     suspend fun getIsPassport(rotatedBitmap: Bitmap): Boolean {
         if (ImageProcessor.isPassportInFrame(rotatedBitmap)) {
             val textAll = MRZUtils.textIsOrc(rotatedBitmap)
-            if (textAll.isNotEmpty()) {
+            return if (textAll.isNotEmpty()) {
                 val detectedText = MRZUtils.detectedImageText(textAll)
-                if (detectedText == "No valid MRZ lines found.") {
-                    return false
-                } else {
-//                    setMrz(rotatedBitmap)
-                    return true
-                }
+                //                    setMrz(rotatedBitmap)
+                detectedText != "No valid MRZ lines found."
             }else {
-                return false
+                false
             }
         } else {
             return false

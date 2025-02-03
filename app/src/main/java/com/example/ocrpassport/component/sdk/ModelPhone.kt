@@ -2,7 +2,7 @@ package com.example.ocrpassport.component.sdk
 
 import android.os.Build
 
-object modelPhone {
+object ModelPhone {
 
     fun isEDCorPhone(): Boolean {
         val manufacturer = Build.MANUFACTURER
@@ -14,6 +14,5 @@ object modelPhone {
         } else {
             return false // Phone
         }
-        return false
     }
 }

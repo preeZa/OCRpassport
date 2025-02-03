@@ -1,11 +1,10 @@
 package com.example.ocrpassport.component.sdk
 
-import android.content.Context
 import android.util.Log
 import org.opencv.android.OpenCVLoader
 
 object OpenCVInitializer {
-    fun initialize(context: Context) {
+    fun initialize() {
         try {
             System.loadLibrary("opencv_java4")
         } catch (e: UnsatisfiedLinkError) {

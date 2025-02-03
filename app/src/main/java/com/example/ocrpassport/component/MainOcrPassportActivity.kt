@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
-import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -175,7 +174,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
             val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true
 
             if (isInvalidData) {
-                showErrorDialog("Invalid data. Please scan again.")
+                showErrorDialog()
             } else {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("MRZ Data")
@@ -186,7 +185,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
                 builder.show()
             }
         } else {
-            showErrorDialog("Invalid data. Please scan again.")
+            showErrorDialog()
         }
     }
 
@@ -194,7 +193,8 @@ class MainOcrPassportActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun showErrorDialog(message: String) {
+    private fun showErrorDialog() {
+        val message = "Invalid data. Please scan again."
         AlertDialog.Builder(this)
             .setTitle("Error")
             .setMessage(message)

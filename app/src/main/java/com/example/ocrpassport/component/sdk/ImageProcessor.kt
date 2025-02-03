@@ -9,7 +9,6 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.camera.core.ImageProxy
@@ -55,10 +54,10 @@ object ImageProcessor {
         val bitmap = imageProxyToBitmap(imageProxy)
         val flippedBitmap = flipImage(bitmap, horizontal = true)
 
-        if (modelPhone.isEDCorPhone()){
-            rotatedBitmap = rotateImage(flippedBitmap, clockwise = true, isEDC = true ) // EDC
+        rotatedBitmap = if (ModelPhone.isEDCorPhone()){
+            rotateImage(flippedBitmap, clockwise = true, isEDC = true ) // EDC
         } else {
-            rotatedBitmap = rotateImage(bitmap, clockwise = true, isEDC = false ) // Phone
+            rotateImage(bitmap, clockwise = true, isEDC = false ) // Phone
         }
 //
         val sharpenedBitmap = applySharpnessFilter(rotatedBitmap)
@@ -98,12 +97,10 @@ object ImageProcessor {
 
     fun rotateImage(bitmap: Bitmap, clockwise: Boolean = true, isEDC: Boolean): Bitmap {
         val matrix = Matrix()
-        var angle: Float = 0f
-        if (isEDC){
-            angle = if (clockwise) -90f else 90f // EDC
-        }
-        else {
-            angle = if (clockwise) 90f else -90f // Phone
+        val angle: Float = if (isEDC){
+            if (clockwise) -90f else 90f // EDC
+        } else {
+            if (clockwise) 90f else -90f // Phone
         }
         matrix.postRotate(angle)
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
