@@ -26,8 +26,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.util.concurrent.TimeoutException
 
-class camaraPreviewActivity : AppCompatActivity() {
+
+class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
 
     private lateinit var camaraLayout: LinearLayout
@@ -51,7 +54,7 @@ class camaraPreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ocrPassportSDK = OCRPassportSDK(this)
-        setContentView(R.layout.activity_camara_preview)
+        setContentView(R.layout.activity_camera_preview)
 
         val scanLine: View = findViewById(R.id.scan_line)
         val parentView: View =  findViewById(R.id.scan_frame)
@@ -113,18 +116,19 @@ class camaraPreviewActivity : AppCompatActivity() {
                 return@setAnalyzer
             }
 
-            if (isProcessing ) {
+            if (isProcessing) {
                 imageProxy.close()
                 return@setAnalyzer
             }
+
             isProcessing = true
             try {
                 val sharpenedBitmap = ocrPassportSDK.getFormatImage(imageProxy)
+
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (ocrPassportSDK.getIsImageSharp(sharpenedBitmap)) {
                             withContext(Dispatchers.Main) {
-
                                 if (ocrPassportSDK.getIsPassport(sharpenedBitmap)) {
                                     ocrPassportSDK.setMrz(sharpenedBitmap)
                                     isLoading = true
@@ -132,18 +136,25 @@ class camaraPreviewActivity : AppCompatActivity() {
 
                                     mrzData = ocrPassportSDK.getMrzData()!!
                                     resultIntent.putExtra("mrzData", mrzData.toString())
-                                    setResult(RESULT_OK,resultIntent)
+                                    setResult(RESULT_OK, resultIntent)
 
                                     isProcessing = false
                                     isCameraRealTime = false
                                     stopCamera()
-
                                 } else {
                                     isProcessing = false
                                 }
                             }
                         } else {
                             isProcessing = false
+                        }
+                    } catch (e: TimeoutException) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@CameraPreviewActivity, "Processing Timeout!", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: IOException) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@CameraPreviewActivity, "Image processing failed: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -156,7 +167,6 @@ class camaraPreviewActivity : AppCompatActivity() {
                 imageProxy.close()
                 isProcessing = false
             }
-
         }
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)

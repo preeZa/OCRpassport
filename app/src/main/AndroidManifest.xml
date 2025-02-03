@@ -22,13 +22,10 @@
         android:theme="@style/Theme.OCRpassport"
         tools:targetApi="31">
         <activity
-            android:name=".component.camaraPreviewActivity"
+            android:name=".component.CameraPreviewActivity"
             android:exported="false" />
         <activity
             android:name=".component.MainOcrPassportActivity"
-            android:exported="false" />
-        <activity
-            android:name=".component.OcrPassportActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

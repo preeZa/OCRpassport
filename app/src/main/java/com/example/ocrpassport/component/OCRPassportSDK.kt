@@ -12,6 +12,8 @@ import com.example.ocrpassport.component.sdk.ImageProcessor
 import com.example.ocrpassport.component.sdk.MRZUtils
 import com.example.ocrpassport.component.sdk.OpenCVInitializer
 import com.example.ocrpassport.component.sdk.modelPhone
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 
 
 class OCRPassportSDK(private val context: Context) {
@@ -38,24 +40,39 @@ class OCRPassportSDK(private val context: Context) {
     }
 
     suspend fun setOcrPassportUri(uri: Uri) {
-        val bitmap = ImageProcessor.uriToBitmap(context, uri)
-        if (bitmap != null) {
-            setMrz(bitmap)
-        } else {
-            Log.e("OCRPassportSDK", "Bitmap is null")
+        try {
+            withTimeout(5000) { // กำหนด timeout 5 วินาที
+                val bitmap = ImageProcessor.uriToBitmap(context, uri)
+                if (bitmap != null) {
+                    setMrz(bitmap)
+                } else {
+                    Log.e("OCRPassportSDK", "Bitmap is null")
+                }
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e("OCRPassportSDK", "Timeout occurred while processing URI", e)
+        } catch (e: Exception) {
+            Log.e("OCRPassportSDK", "Error processing URI: ${e.message}", e)
         }
     }
-
     suspend fun setOcrPassportPath(path: String, reqWidth: Int, reqHeight: Int) {
-        val bitmap = ImageProcessor.decodeSampledBitmapFromFile(path, reqWidth, reqHeight)
-        val image: Bitmap
+        try {
+            withTimeout(5000) { // Timeout 5 วินาที
+                val bitmap = ImageProcessor.decodeSampledBitmapFromFile(path, reqWidth, reqHeight)
+                val image: Bitmap
 
-        if (modelPhone.isEDCorPhone()) {
-            image = ImageProcessor.flipImage(bitmap, horizontal = true) // EDC
-        } else {
-            image = ImageProcessor.rotateImage(bitmap, clockwise = true, isEDC = false) // phone
+                if (modelPhone.isEDCorPhone()) {
+                    image = ImageProcessor.flipImage(bitmap, horizontal = true)
+                } else {
+                    image = ImageProcessor.rotateImage(bitmap, clockwise = true, isEDC = false)
+                }
+                setMrz(image)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e("OCRPassportSDK", "Timeout occurred while processing file path", e)
+        } catch (e: Exception) {
+            Log.e("OCRPassportSDK", "Error processing file path: ${e.message}", e)
         }
-        setMrz(image)
     }
 
     fun getFormatImage(imageProxy: ImageProxy): Bitmap {
@@ -87,7 +104,11 @@ class OCRPassportSDK(private val context: Context) {
 
     suspend fun setMrz(bitmap: Bitmap) {
         try {
-            mrzData = MRZUtils.recognizeText(bitmap)
+            withTimeout(10000) {
+                mrzData = MRZUtils.recognizeText(bitmap)
+            }
+        } catch (e: TimeoutCancellationException) {
+            Log.e("OCRPassportSDK", "Timeout occurred while recognizing MRZ data", e)
         } catch (e: Exception) {
             Log.e("OCRPassportSDK", "Error recognizing MRZ data: ${e.message}", e)
         }

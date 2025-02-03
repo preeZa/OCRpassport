@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
@@ -19,13 +18,11 @@ import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-
 
 class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
@@ -36,8 +33,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var loadingLayout: LinearLayout
     private lateinit var contentLayout: LinearLayout
     private lateinit var lottieAnimation: LottieAnimationView
-
-    private lateinit var mrzData: MRZData
 
     private var isLoading: Boolean = false
         set(value) {
@@ -50,33 +45,32 @@ class MainOcrPassportActivity : AppCompatActivity() {
             if (isGranted) {
                 createUriImage()
             } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_LONG).show()
+                showToast("Camera permission denied")
             }
         }
 
     private val takePictureLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
-                lifecycleScope.launch {
-                    captureImage()
-                }
+                lifecycleScope.launch { captureImage() }
             }
         }
-    private val requestPermissionGallryLauncher =
+
+    private val requestPermissionGalleryLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             } else {
-                Toast.makeText(this, "Permission denied to access gallery", Toast.LENGTH_SHORT)
-                    .show()
+                showToast("Permission denied to access gallery")
             }
         }
+
     private val requestPermissionCameraRealTimeLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera premission denied", Toast.LENGTH_LONG).show()
+                showToast("Camera permission denied")
             }
         }
 
@@ -96,7 +90,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
             requestPermissionCameraLauncher.launch(Manifest.permission.CAMERA)
         }
         galleryImgBtn.setOnClickListener {
-            requestPermissionGallryLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+            requestPermissionGalleryLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
         realTimeBtn.setOnClickListener {
             requestPermissionCameraRealTimeLauncher.launch(Manifest.permission.CAMERA)
@@ -107,76 +101,81 @@ class MainOcrPassportActivity : AppCompatActivity() {
         val photoFile: File? = try {
             ocrPassportSDK.setCurrentPhotoPath()
         } catch (ex: IOException) {
-            Toast.makeText(this, "Error occurred while creating the file", Toast.LENGTH_LONG).show()
+            Log.e("OCRPassport", "Error creating file: ${ex.message}", ex)
+            showToast("Error creating file: ${ex.message}")
             null
         }
-        if (photoFile != null) {
+        photoFile?.let {
             try {
-                val photoUri: Uri =
-                    FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", photoFile)
+                val photoUri: Uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", it)
                 takePictureLauncher.launch(photoUri)
             } catch (e: Exception) {
-                Toast.makeText(this, "Failed to create file URI: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("OCRPassport", "Failed to create file URI: ${e.message}", e)
+                showToast("Failed to create file URI: ${e.message}")
             }
-        } else {
-            Toast.makeText(this, "Error occurred while creating the file", Toast.LENGTH_LONG).show()
         }
     }
 
-    private val pickMedia = registerForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        if (uri != null) {
-            CoroutineScope(Dispatchers.Main).launch {
-                try {
-                    isLoading = true
-                    withContext(Dispatchers.IO) {
-                        ocrPassportSDK.setOcrPassportUri(uri)
-                    }
-                    mrzData = ocrPassportSDK.getMrzData()!!
-                    println(mrzData.toString())
-                    isLoading = false
-                } catch (e: Exception) {
-                    // Handle exception
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { processImageUri(it) }
+    }
+
+    private fun processImageUri(uri: Uri) {
+        lifecycleScope.launch {
+            isLoading = true
+            try {
+                withContext(Dispatchers.IO) {
+                    ocrPassportSDK.setOcrPassportUri(uri)
+                    ocrPassportSDK.getMrzData()?.let {
+                        // ใช้ mrzData ได้ตรงนี้
+                    } ?: throw IOException("MRZ data is null")
                 }
+            } catch (e: IOException) {
+                Log.e("OCRPassport", "File error: ${e.message}", e)
+                showToast("File error: ${e.message}")
+            } catch (e: java.util.concurrent.TimeoutException) {
+                Log.e("OCRPassport", "Processing timeout: ${e.message}", e)
+                showToast("Processing timeout, please try again")
+            } finally {
+                isLoading = false
             }
         }
     }
+
     private suspend fun captureImage() {
         ocrPassportSDK.getCurrentPhotoPath()?.let { path ->
+            isLoading = true
             try {
-                isLoading = true
-                ocrPassportSDK.setOcrPassportPath(path,1024,1024) // จะรอจนฟังก์ชันนี้ทำงานเสร็จ
-                mrzData = ocrPassportSDK.getMrzData()!!
-                println(mrzData.toString())
+                withContext(Dispatchers.IO) {
+                    ocrPassportSDK.setOcrPassportPath(path, 1024, 1024)
+                    ocrPassportSDK.getMrzData()?.let {
+                        // ใช้ mrzData ได้ตรงนี้
+                    } ?: throw IOException("MRZ data is null")
+                }
+            } catch (e: IOException) {
+                Log.e("OCRPassport", "File error: ${e.message}", e)
+                showToast("File error: ${e.message}")
+            } catch (e: java.util.concurrent.TimeoutException) {
+                Log.e("OCRPassport", "Processing timeout: ${e.message}", e)
+                showToast("Processing timeout, please try again")
+            } finally {
                 isLoading = false
-            } catch (e: Exception) {
-                Log.e("GalleryImage", "Error processing image: ${e.message}", e)
-                return // หากเกิดข้อผิดพลาดจะหยุดฟังก์ชันนี้
             }
         }
-
     }
 
     private fun startCamera() {
-        val intent = Intent(this, camaraPreviewActivity::class.java)
+        val intent = Intent(this, CameraPreviewActivity::class.java)
         activityResultLauncher.launch(intent)
     }
+
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val mrzDataReq = result.data?.getStringExtra("mrzData")
             val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true
 
-            println("isInvalidDatav: $isInvalidData")
-            println(mrzDataReq)
             if (isInvalidData) {
-                val errorDialog = AlertDialog.Builder(this)
-                errorDialog.setTitle("ข้อผิดพลาด")
-                errorDialog.setMessage("ข้อมูลผิดพลาด โปรด Scan ใหม่")
-                errorDialog.setPositiveButton("ลองอีกครั้ง") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                errorDialog.show()
+                showErrorDialog("Invalid data. Please scan again.")
             } else {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("MRZ Data")
@@ -187,27 +186,31 @@ class MainOcrPassportActivity : AppCompatActivity() {
                 builder.show()
             }
         } else {
-            val errorDialog = AlertDialog.Builder(this)
-            errorDialog.setTitle("ข้อผิดพลาด")
-            errorDialog.setMessage("ข้อมูลผิดพลาด โปรด Scan ใหม่")
-            errorDialog.setPositiveButton("ลองอีกครั้ง") { dialog, _ ->
-                dialog.dismiss()
-            }
-            errorDialog.show()
+            showErrorDialog("Invalid data. Please scan again.")
         }
     }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun showErrorDialog(message: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Error")
+            .setMessage(message)
+            .setPositiveButton("Try Again") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
     private fun updateLoadingState() {
         if (isLoading) {
             loadingLayout.visibility = View.VISIBLE
             lottieAnimation.playAnimation()
             contentLayout.visibility = View.GONE
-
         } else {
             lottieAnimation.cancelAnimation()
             loadingLayout.visibility = View.GONE
             contentLayout.visibility = View.VISIBLE
         }
     }
-
-
 }

@@ -111,16 +111,16 @@
                     android:textStyle="bold" />
 
             </FrameLayout>
-<!--            <Button-->
-<!--                android:id="@+id/closeCamaraBtn"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="bottom|center"-->
-<!--                android:layout_marginBottom="16dp"-->
-<!--                android:backgroundTint="@color/green"-->
-<!--                android:elevation="2dp"-->
-<!--                android:text="Close Camera"-->
-<!--                android:textColor="@android:color/white" />-->
+            <!--            <Button-->
+            <!--                android:id="@+id/closeCamaraBtn"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_gravity="bottom|center"-->
+            <!--                android:layout_marginBottom="16dp"-->
+            <!--                android:backgroundTint="@color/green"-->
+            <!--                android:elevation="2dp"-->
+            <!--                android:text="Close Camera"-->
+            <!--                android:textColor="@android:color/white" />-->
 
         </FrameLayout>
     </LinearLayout>
