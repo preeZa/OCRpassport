@@ -175,7 +175,8 @@ object MRZUtils {
 
         val passportNumber = line2.substring(0, 9).trim().uppercase()
         val nationality = line2.substring(10, 13).trim()
-        val dateOfBirth = formatDate(line2.substring(13, 19).trim())
+//        val dateOfBirth = formatDate(line2.substring(13, 19).trim())
+        val dateOfBirth = line2.substring(13, 19).trim()
 
 
         val genderIndex = line2.indexOfFirst { it == 'F' || it == 'M' }
@@ -185,7 +186,8 @@ object MRZUtils {
         }
 
         val expirationDate = if (genderIndex != -1 && genderIndex + 6 < line2.length) {
-            formatDate(line2.substring(genderIndex + 1, genderIndex + 7),true)  // 230117
+//            formatDate(line2.substring(genderIndex + 1, genderIndex + 7),true)  // 230117
+            line2.substring(genderIndex + 1, genderIndex + 7)
         } else {
             ""
         }

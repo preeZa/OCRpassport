@@ -135,7 +135,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                                     delay(2000)
 
                                     mrzData = ocrPassportSDK.getMrzData()!!
-                                    resultIntent.putExtra("mrzData", mrzData.toString())
+                                    resultIntent.putExtra("mrzData", mrzData)
                                     setResult(RESULT_OK, resultIntent)
 
                                     isProcessing = false

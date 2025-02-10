@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
+import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -170,23 +171,34 @@ class MainOcrPassportActivity : AppCompatActivity() {
 
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            val mrzDataReq = result.data?.getStringExtra("mrzData")
-            val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true
-
-            if (isInvalidData) {
-                showErrorDialog()
-            } else {
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle("MRZ Data")
-                builder.setMessage(mrzDataReq)
-                builder.setPositiveButton("OK") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                builder.show()
+            val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
+            if (mrzData != null) {
+                startNfcReading(mrzData.DocumentNumber.toString(),mrzData.DateOfBirth.toString(),mrzData.ExpiryDate.toString())
             }
+//            val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true
+
+//            if (isInvalidData) {
+//                showErrorDialog()
+//            } else {
+//                val builder = AlertDialog.Builder(this)
+//                builder.setTitle("MRZ Data")
+//                builder.setMessage(mrzDataReq)
+//                builder.setPositiveButton("OK") { dialog, _ ->
+//                    dialog.dismiss()
+//                }
+//                builder.show()
+//            }
         } else {
             showErrorDialog()
         }
+    }
+    private fun startNfcReading(passportNumber: String, birthDate: String, expiryDate: String) {
+        val nfcIntent = Intent(this, NfcReadingActivity::class.java).apply {
+            putExtra("passportNumber", passportNumber)
+            putExtra("birthDate", birthDate)
+            putExtra("expiryDate", expiryDate)
+        }
+        startActivity(nfcIntent)
     }
 
     private fun showToast(message: String) {
