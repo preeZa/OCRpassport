@@ -1,10 +1,12 @@
 package com.example.ocrpassport.component
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -18,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -165,8 +168,10 @@ class MainOcrPassportActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        val intent = Intent(this, CameraPreviewActivity::class.java)
-        activityResultLauncher.launch(intent)
+//        val intent = Intent(this, CameraPreviewActivity::class.java)
+//        activityResultLauncher.launch(intent)
+//        showBottomSheetDialog(this)
+        startNfcReading("","","")
     }
 
     private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -200,6 +205,18 @@ class MainOcrPassportActivity : AppCompatActivity() {
             putExtra("expiryDate", expiryDate)
         }
         startActivity(nfcIntent)
+    }
+    private fun showBottomSheetDialog(context: Context) {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
+        bottomSheetDialog.setContentView(view)
+
+        val btnClose = view.findViewById<Button>(R.id.btnClose)
+        btnClose.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
     }
 
     private fun showToast(message: String) {

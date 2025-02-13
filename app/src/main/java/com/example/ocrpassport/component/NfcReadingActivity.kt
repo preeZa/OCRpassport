@@ -4,6 +4,7 @@ package com.example.ocrpassport.component
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,6 +15,8 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Base64
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.ocrpassport.R
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import net.sf.scuba.smartcards.CardService
 import org.jmrtd.BACKey
 import org.jmrtd.PassportService
@@ -44,7 +48,7 @@ class NfcReadingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_nfc_reading)
         countdownTextView = findViewById(R.id.countDown_RFID_Txt)
 
-        val countdownTimer = object : CountDownTimer(10000, 1000) { // 10 วินาที
+        val countdownTimer = object : CountDownTimer(60000, 1000) { // 10 วินาที
             @SuppressLint("SetTextI18n")
             override fun onTick(millisUntilFinished: Long) {
                 val seconds = (millisUntilFinished / 1000).toInt()
@@ -59,10 +63,12 @@ class NfcReadingActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 countdownTextView.text = ""
+                finish()
+                return
             }
         }
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        if (nfcAdapter == null || !nfcAdapter.isEnabled) {
+        if (!nfcAdapter.isEnabled) {
             Toast.makeText(this, "NFC is not available or enabled", Toast.LENGTH_LONG).show()
             finish()
             return
@@ -81,11 +87,13 @@ class NfcReadingActivity : AppCompatActivity() {
             val isoDep = IsoDep.get(tag)
 
             tag?.let {
+                showBottomSheetDialog(this)
                 Log.d("NfcReadingActivity", "NFC Tag detected!")
                 Toast.makeText(this, "NFC Tag detected!", Toast.LENGTH_SHORT).show()
                 readPassport(isoDep)
             }
         }
+
     }
 
 
@@ -97,7 +105,6 @@ class NfcReadingActivity : AppCompatActivity() {
             }
             isoDep.connect()
 
-            // ดึงข้อมูลที่ส่งมาจาก OCR หรือกรอกเอง
             val passportNumber = intent.getStringExtra("passportNumber") ?: return
             val birthDate = intent.getStringExtra("birthDate") ?: return
             val expiryDate = intent.getStringExtra("expiryDate") ?: return
@@ -159,8 +166,18 @@ class NfcReadingActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+    private fun showBottomSheetDialog(context: Context) {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
+        bottomSheetDialog.setContentView(view)
 
+        val btnClose = view.findViewById<Button>(R.id.btnClose)
+        btnClose.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
 
+        bottomSheetDialog.show()
+    }
 
 
     override fun onResume() {
