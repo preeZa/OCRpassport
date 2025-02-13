@@ -173,6 +173,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK) {
             val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
             if (mrzData != null) {
+                Log.d("activityResultLauncher", "mrzData: $mrzData")
                 startNfcReading(mrzData.DocumentNumber.toString(),mrzData.DateOfBirth.toString(),mrzData.ExpiryDate.toString())
             }
 //            val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true

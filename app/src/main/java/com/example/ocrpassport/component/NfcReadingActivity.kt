@@ -1,6 +1,8 @@
 package com.example.ocrpassport.component
 
 
+import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Bitmap
@@ -9,8 +11,10 @@ import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Base64
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -33,17 +37,37 @@ import java.io.InputStream
 
 class NfcReadingActivity : AppCompatActivity() {
     private lateinit var nfcAdapter: NfcAdapter
+    private lateinit var countdownTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nfc_reading)
+        countdownTextView = findViewById(R.id.countDown_RFID_Txt)
 
+        val countdownTimer = object : CountDownTimer(10000, 1000) { // 10 วินาที
+            @SuppressLint("SetTextI18n")
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = (millisUntilFinished / 1000).toInt()
+                ObjectAnimator.ofFloat(countdownTextView, "alpha", 0f, 1f).apply {
+                    duration = 500
+                    start()
+                }
+                runOnUiThread {
+                    countdownTextView.text = seconds.toString()
+                }
+            }
+
+            override fun onFinish() {
+                countdownTextView.text = ""
+            }
+        }
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         if (nfcAdapter == null || !nfcAdapter.isEnabled) {
             Toast.makeText(this, "NFC is not available or enabled", Toast.LENGTH_LONG).show()
             finish()
             return
         }
+        countdownTimer.start()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -115,10 +139,10 @@ class NfcReadingActivity : AppCompatActivity() {
                 }
 
                 val imageBytes = byteArrayOutputStream.toByteArray()
+                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                Log.d("NfcReadingActivity", "bitmap: $bitmap")
 
-                // แปลงเป็น Base64
-//                val base64Image = Base64.getEncoder().encodeToString(imageBytes)
-//                Log.d("NfcReadingActivity", "base64Image: $base64Image")
+
             } else {
                 Log.e("NfcReadingActivity", "No face image found in DG2")
             }
