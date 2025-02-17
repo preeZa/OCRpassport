@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -29,6 +30,7 @@ import java.io.IOException
 
 class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
+    private lateinit var nfcAdapter: NfcAdapter
 
     private lateinit var captureImgBtn: Button
     private lateinit var realTimeBtn: Button
@@ -204,6 +206,20 @@ class MainOcrPassportActivity : AppCompatActivity() {
             putExtra("birthDate", birthDate)
             putExtra("expiryDate", expiryDate)
         }
+
+//        val nfcAdapter: NfcAdapter? = NfcAdapter.getDefaultAdapter(this)
+//        if (nfcAdapter == null) {
+//            AlertDialog.Builder(this)
+//                .setTitle("Error")
+//                .setMessage("อุปกรณ์ของคุณไม่รองรับ NFC")
+//                .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+//                .show()
+//        } else if (!nfcAdapter.isEnabled) {
+//            Toast.makeText(this, "กรุณาเปิดใช้งาน NFC", Toast.LENGTH_LONG).show()
+//        } else {
+//            // NFC พร้อมใช้งาน
+//             startActivity(nfcIntent)
+//        }
         startActivity(nfcIntent)
     }
     private fun showBottomSheetDialog(context: Context) {
