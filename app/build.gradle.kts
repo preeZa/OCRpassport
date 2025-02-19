@@ -73,9 +73,10 @@ dependencies {
     //Readable Travel Document
     implementation ("net.sf.scuba:scuba-sc-android:0.0.18")
     implementation ("org.jmrtd:jmrtd:0.7.21")
-//    implementation ("org.jmrtd:jnbis:1.0.4")
-//    implementation ("com.atos.mediagenerator:jj2000:5.2")
 
+    // bumptech รูป http
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    
     implementation(project(":openCV"))
 
     implementation (libs.lottie)

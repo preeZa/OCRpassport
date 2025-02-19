@@ -158,7 +158,7 @@ object MRZUtils {
                 }
             } catch (e: Exception) {
                 Log.e("MRZUtils", "Exception: ${e.message}")
-                return MRZData("", "", "", "", "", "", "", "", "")
+                return MRZData("", "", "", "", "", "", "", "", "","")
             }
         }
 
@@ -225,7 +225,8 @@ object MRZUtils {
             Sex = gender,
             Nationality = nationality,
             DateOfBirth = dateOfBirth,
-            ExpiryDate = expirationDate
+            ExpiryDate = expirationDate,
+            Image = ""
         )
     }
 }

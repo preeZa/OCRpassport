@@ -12,7 +12,8 @@ class MRZData(
     val Sex: String?,
     val Nationality: String?,
     val DateOfBirth: String?,
-    val ExpiryDate: String?
+    val ExpiryDate: String?,
+    val Image: String?
 ): Serializable
 {
     override fun toString(): String {

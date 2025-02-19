@@ -1,6 +1,7 @@
 package com.example.ocrpassport.component
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -10,7 +11,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,10 +30,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import com.bumptech.glide.Glide
 
 class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
-    private lateinit var nfcAdapter: NfcAdapter
+
 
     private lateinit var captureImgBtn: Button
     private lateinit var realTimeBtn: Button
@@ -112,7 +116,11 @@ class MainOcrPassportActivity : AppCompatActivity() {
         }
         photoFile?.let {
             try {
-                val photoUri: Uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", it)
+                val photoUri: Uri = FileProvider.getUriForFile(
+                    this,
+                    "${applicationContext.packageName}.provider",
+                    it
+                )
                 takePictureLauncher.launch(photoUri)
             } catch (e: Exception) {
                 Log.e("OCRPassport", "Failed to create file URI: ${e.message}", e)
@@ -121,9 +129,10 @@ class MainOcrPassportActivity : AppCompatActivity() {
         }
     }
 
-    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let { processImageUri(it) }
-    }
+    private val pickMedia =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uri?.let { processImageUri(it) }
+        }
 
     private fun processImageUri(uri: Uri) {
         lifecycleScope.launch {
@@ -173,16 +182,21 @@ class MainOcrPassportActivity : AppCompatActivity() {
 //        val intent = Intent(this, CameraPreviewActivity::class.java)
 //        activityResultLauncher.launch(intent)
 //        showBottomSheetDialog(this)
-        startNfcReading("","","")
+        startNfcReading("", "", "")
     }
 
-    private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
-            if (mrzData != null) {
-                Log.d("activityResultLauncher", "mrzData: $mrzData")
-                startNfcReading(mrzData.DocumentNumber.toString(),mrzData.DateOfBirth.toString(),mrzData.ExpiryDate.toString())
-            }
+    private val activityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
+                if (mrzData != null) {
+                    Log.d("activityResultLauncher", "mrzData: $mrzData")
+                    startNfcReading(
+                        mrzData.DocumentNumber.toString(),
+                        mrzData.DateOfBirth.toString(),
+                        mrzData.ExpiryDate.toString()
+                    )
+                }
 //            val isInvalidData = mrzDataReq?.lines()?.all { it.trim().endsWith("=") || it.trim().isEmpty() } ?: true
 
 //            if (isInvalidData) {
@@ -196,10 +210,11 @@ class MainOcrPassportActivity : AppCompatActivity() {
 //                }
 //                builder.show()
 //            }
-        } else {
-            showErrorDialog()
+            } else {
+                showErrorDialog()
+            }
         }
-    }
+
     private fun startNfcReading(passportNumber: String, birthDate: String, expiryDate: String) {
         val nfcIntent = Intent(this, NfcReadingActivity::class.java).apply {
             putExtra("passportNumber", passportNumber)
@@ -217,11 +232,25 @@ class MainOcrPassportActivity : AppCompatActivity() {
 //        } else if (!nfcAdapter.isEnabled) {
 //            Toast.makeText(this, "กรุณาเปิดใช้งาน NFC", Toast.LENGTH_LONG).show()
 //        } else {
-//            // NFC พร้อมใช้งาน
-//             startActivity(nfcIntent)
+//            activityNFCResult.launch(nfcIntent)
+//
 //        }
-        startActivity(nfcIntent)
+        activityNFCResult.launch(nfcIntent)
     }
+
+    private val activityNFCResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
+                if (mrzData != null) {
+//                Log.d("activityResultLauncher", "mrzData: $mrzData")
+                    showMRZDialog(this, mrzData)
+                }
+            } else {
+                showErrorDialog()
+            }
+        }
+
     private fun showBottomSheetDialog(context: Context) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
@@ -237,6 +266,27 @@ class MainOcrPassportActivity : AppCompatActivity() {
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun showMRZDialog(context: Context, mrzData: MRZData) {
+        val builder = AlertDialog.Builder(context)
+        val inflater = LayoutInflater.from(context)
+        val dialogView = inflater.inflate(R.layout.dialog_mrz_data, null)
+
+
+        val imageView = dialogView.findViewById<ImageView>(R.id.imageView)
+        val textView = dialogView.findViewById<TextView>(R.id.textView)
+
+        textView.text = mrzData.toString()
+//        Glide.with(context).load(mrzData.Image).into(imageView)
+//        imageView.setImageBitmap()
+
+        builder.setView(dialogView)
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     private fun showErrorDialog() {

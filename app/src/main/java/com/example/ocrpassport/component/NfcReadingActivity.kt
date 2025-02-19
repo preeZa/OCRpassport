@@ -23,6 +23,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import net.sf.scuba.smartcards.CardService
@@ -42,6 +43,7 @@ import java.io.InputStream
 class NfcReadingActivity : AppCompatActivity() {
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var countdownTextView: TextView
+    private val resultIntent = Intent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +65,20 @@ class NfcReadingActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 countdownTextView.text = ""
+                val sampleMRZ = MRZData(
+                    TravelDoc = "P",
+                    DocumentNumber = "A12345678",
+                    IdGard = "123456789",
+                    Surname = "Doe",
+                    GivenNames = "John",
+                    Sex = "M",
+                    Nationality = "THA",
+                    DateOfBirth = "1990-01-01",
+                    ExpiryDate = "2030-01-01",
+                    Image = "https://img.freepik.com/free-photo/serious-young-african-man-standing-isolated_171337-9633.jpg" // หรือ Base64 String
+                )
+                resultIntent.putExtra("mrzData", sampleMRZ)
+                setResult(RESULT_OK, resultIntent)
                 finish()
                 return
             }
@@ -171,10 +187,10 @@ class NfcReadingActivity : AppCompatActivity() {
 //        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
 //        bottomSheetDialog.setContentView(view)
 //
-//        val btnClose = view.findViewById<Button>(R.id.btnClose)
-//        btnClose.setOnClickListener {
-//            bottomSheetDialog.dismiss()
-//        }
+////        val btnClose = view.findViewById<Button>(R.id.btnClose)
+////        btnClose.setOnClickListener {
+////            bottomSheetDialog.dismiss()
+////        }
 //
 //        bottomSheetDialog.show()
 //    }
