@@ -83,12 +83,6 @@ class NfcReadingActivity : AppCompatActivity() {
                 return
             }
         }
-//        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-//        if (!nfcAdapter.isEnabled) {
-//            Toast.makeText(this, "NFC is not available or enabled", Toast.LENGTH_LONG).show()
-//            finish()
-//            return
-//        }
         countdownTimer.start()
     }
 
@@ -207,6 +201,7 @@ class NfcReadingActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+    @SuppressLint("InflateParams")
     private fun showBottomSheetDialog(context: Context) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
@@ -223,6 +218,11 @@ class NfcReadingActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        if (!::nfcAdapter.isInitialized) {
+            return
+        }
+
         val intent = Intent(this, javaClass).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
@@ -237,7 +237,9 @@ class NfcReadingActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        nfcAdapter.disableForegroundDispatch(this)
+        if (::nfcAdapter.isInitialized) {
+            nfcAdapter.disableForegroundDispatch(this)
+        }
     }
 
 }

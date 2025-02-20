@@ -97,7 +97,7 @@ object MRZUtils {
 
             val birthYearPrefix = data.substring(0, 2).toInt()
 
-            // ตรวจสอบปีให้รองรับทั้งวันเกิดและวันหมดอายุ
+
             val yearPrefix = when {
                 isExpirationDate -> {
                     // กรณีวันหมดอายุ (เช่น 99 ควรเป็น 2099)
@@ -114,7 +114,6 @@ object MRZUtils {
             val month = data.substring(2, 4)
             val day = data.substring(4, 6)
 
-            // ตรวจสอบเดือนและวันที่ว่ามีค่าในช่วงที่ถูกต้องหรือไม่
             if (month.toInt() !in 1..12) {
                 throw IllegalArgumentException("Invalid month: $month")
             }
@@ -122,7 +121,6 @@ object MRZUtils {
                 throw IllegalArgumentException("Invalid day: $day")
             }
 
-            // สร้างวันที่ในรูปแบบ yyyy-MM-dd
             val formattedDate = "$year-$month-$day"
             return formattedDate
 
@@ -164,9 +162,9 @@ object MRZUtils {
 
         val line1 = lines[0]
         var line2 = if (lines.size > 2 && lines[1].all { it == '<' || it.isWhitespace() }) {
-            lines[2]  // ใช้บรรทัดที่ 3 แทน
+            lines[2]
         } else {
-            lines[1]  // ใช้บรรทัดที่ 2 ตามปกติ
+            lines[1]
         }
 
         line2 = line2.replace(" ", "").trim()
@@ -207,10 +205,10 @@ object MRZUtils {
         val names = namePart.split(" ")
             .map { it.uppercase() } // แปลงคำทั้งหมดเป็นตัวใหญ่
             .filter {
-                it.isNotBlank() &&                          // กรองคำว่าง
-                        it.all { c -> c.isLetter() } &&     // กรองคำที่มีเฉพาะตัวอักษร
-                        it.length > 1 &&                    // ต้องมีความยาวมากกว่าหนึ่งตัวอักษร
-                        !it.contains(Regex("(CC|KK|CK|KC|CKC|K{3,}|C{3,})")) // กรองคำที่มีรูปแบบไม่เหมาะสม
+                it.isNotBlank() &&
+                        it.all { c -> c.isLetter() } &&
+                        it.length > 1 &&
+                        !it.contains(Regex("(CC|KK|CK|KC|CKC|K{3,}|C{3,})"))
             }
 
         val lastName = names.firstOrNull() ?: ""

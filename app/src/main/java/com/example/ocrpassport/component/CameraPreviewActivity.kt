@@ -106,8 +106,10 @@ class CameraPreviewActivity : AppCompatActivity() {
 
         var isReadyToAnalyze = false
 
+        var isCameraStopped = false
+
         imageAnalyzer.setAnalyzer(ContextCompat.getMainExecutor(this)) { imageProxy ->
-            if (!isReadyToAnalyze) {
+            if (!isReadyToAnalyze || isCameraStopped) {
                 imageProxy.close()
                 return@setAnalyzer
             }
@@ -181,6 +183,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                 Handler(mainLooper).postDelayed({
                     isProcessing = false
                     isCameraRealTime = false
+                    isCameraStopped = true  // หยุดการวิเคราะห์
                     setResult(RESULT_CANCELED, resultIntent)
                     stopCamera()
                 }, 20000)
@@ -192,10 +195,15 @@ class CameraPreviewActivity : AppCompatActivity() {
     }
 
     private fun stopCamera() {
-        val cameraProvider = ProcessCameraProvider.getInstance(this).get()
-        cameraProvider.unbindAll()
-        finish()
-        isLoading = false
+        try {
+            val cameraProvider = ProcessCameraProvider.getInstance(this).get()
+            cameraProvider.unbindAll()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            finish()
+            isLoading = false
+        }
     }
     private fun updateLoadingState() {
         if (isLoading) {

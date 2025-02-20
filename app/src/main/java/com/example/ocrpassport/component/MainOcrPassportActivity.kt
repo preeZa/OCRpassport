@@ -64,8 +64,8 @@ class MainOcrPassportActivity : AppCompatActivity() {
                     )
                 }
             } else {
-                showErrorDialog()
-//                startNfcReading("", "", "")
+//                showErrorDialog()
+                startNfcReading("", "", "")
             }
         }
 

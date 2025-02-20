@@ -92,20 +92,16 @@ object ImageProcessor {
     }
 
     private fun applySharpnessFilter(bitmap: Bitmap): Bitmap {
-        // สร้าง Bitmap ใหม่ที่มีขนาดเหมือนเดิม
         val width = bitmap.width
         val height = bitmap.height
         val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
-        // สร้าง Paint เพื่อใช้สำหรับการวาด
         val paint = Paint()
         val matrix = ColorMatrix()
 
-        // กำหนดตัวกรองที่ทำให้ภาพคมขึ้น (ตัวเลขสามารถปรับได้ตามความเหมาะสม)
         matrix.setSaturation(1f)
         paint.colorFilter = ColorMatrixColorFilter(matrix)
 
-        // สร้าง Canvas และวาดภาพบน Canvas ที่มี Paint
         val canvas = Canvas(resultBitmap)
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
 
@@ -118,22 +114,17 @@ object ImageProcessor {
             return false
         }
 
-        // แปลง Bitmap เป็น Mat
         val mat = Mat()
         Utils.bitmapToMat(bitmap, mat)
 
-        // แปลงเป็น Grayscale
         val grayMat = Mat()
         Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
-        // ใช้ GaussianBlur เพื่อลด Noise
         Imgproc.GaussianBlur(grayMat, grayMat, org.opencv.core.Size(5.0, 5.0), 0.0)
 
-        // ใช้ Canny Edge Detection เพื่อหา edges
         val edges = Mat()
         Imgproc.Canny(grayMat, edges, 75.0, 200.0)
 
-        // ค้นหา Contours
         val contours = ArrayList<MatOfPoint>()
         val hierarchy = Mat()
         Imgproc.findContours(
@@ -145,25 +136,20 @@ object ImageProcessor {
         )
 
         for (contour in contours) {
-            // แปลง Contour เป็น ApproxPoly เพื่อหารูปทรงเรขาคณิต
             val approx = MatOfPoint2f()
             val contour2f = MatOfPoint2f(*contour.toArray())
             Imgproc.approxPolyDP(contour2f, approx, 0.02 * Imgproc.arcLength(contour2f, true), true)
 
-            // ตรวจสอบว่ามี 4 ด้าน (ลักษณะสี่เหลี่ยม)
             if (approx.total() == 4L) {
-                // คำนวณ Bounding Box ของ Contour
                 val rect = Imgproc.boundingRect(MatOfPoint(*approx.toArray()))
 
-                // ตรวจสอบสัดส่วนของกรอบว่าใกล้เคียงกับพาสปอร์ตหรือไม่
                 val aspectRatio = rect.width.toDouble() / rect.height.toDouble()
-                if (aspectRatio in 1.4..1.6) { // Passport มีสัดส่วนประมาณ 1.41
-                    // ปล่อยทรัพยากรและคืนค่า
+                if (aspectRatio in 1.4..1.6) {
                     mat.release()
                     grayMat.release()
                     edges.release()
                     hierarchy.release()
-                    return true // พบ Passport ในกรอบ
+                    return true
                 }
             }
         }
@@ -180,20 +166,16 @@ object ImageProcessor {
         val mat = Mat()
         Utils.bitmapToMat(bitmap, mat)
 
-        // Convert to grayscale
         val grayMat = Mat()
         Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
-        // Compute Laplacian
         val laplacianMat = Mat()
         Imgproc.Laplacian(grayMat, laplacianMat, CvType.CV_64F)
 
-        // Calculate mean and standard deviation
         val mean = MatOfDouble()
         val stddev = MatOfDouble()
         Core.meanStdDev(laplacianMat, mean, stddev)
 
-        // Get variance from standard deviation
         val variance = stddev.toArray()[0].pow(2)
         return variance > threshold
     }
