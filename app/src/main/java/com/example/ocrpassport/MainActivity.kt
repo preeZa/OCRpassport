@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var ocrPassportActBtn = findViewById<Button>(R.id.ocrPassport_act_btn)
+        val ocrPassportActBtn = findViewById<Button>(R.id.ocrPassport_act_btn)
         ocrPassportActBtn.setOnClickListener {
             val Intent = Intent(this, MainOcrPassportActivity::class.java)
             startActivity(Intent)

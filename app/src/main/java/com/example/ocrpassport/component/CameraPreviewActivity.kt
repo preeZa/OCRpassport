@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -61,8 +60,6 @@ class CameraPreviewActivity : AppCompatActivity() {
         loadingLayout = findViewById(R.id.loadingLayout)
         lottieAnimation = findViewById(R.id.lottieAnimation)
         camaraLayout = findViewById(R.id.camaraLayout)
-//        closeCamaraBtn = findViewById(R.id.closeCamaraBtn)
-//        closeCamaraBtn.setOnClickListener { finish() }
 
         countdownTextView = findViewById(R.id.countdownTextView)
 
