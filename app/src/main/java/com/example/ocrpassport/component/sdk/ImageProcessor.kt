@@ -26,22 +26,7 @@ import java.util.*
 import kotlin.math.pow
 
 object ImageProcessor {
-    fun createTempPhotoFile(context: Context): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-    }
-    fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream).also { inputStream?.close() }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e("ImageProcessor", "uriToBitmap : ${e.message}")
-            null
-        }
-    }
-    fun flipImage(bitmap: Bitmap, horizontal: Boolean = true): Bitmap {
+    private fun flipImage(bitmap: Bitmap, horizontal: Boolean = true): Bitmap {
         val matrix = Matrix().apply {
             preScale(if (horizontal) -1.0f else 1.0f, 1.0f)
         }
@@ -211,17 +196,6 @@ object ImageProcessor {
         // Get variance from standard deviation
         val variance = stddev.toArray()[0].pow(2)
         return variance > threshold
-    }
-    fun decodeSampledBitmapFromFile(path: String, reqWidth: Int, reqHeight: Int): Bitmap {
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(path, options)
-
-        // คำนวณค่า inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-        options.inJustDecodeBounds = false
-
-        return BitmapFactory.decodeFile(path, options)
     }
 
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {

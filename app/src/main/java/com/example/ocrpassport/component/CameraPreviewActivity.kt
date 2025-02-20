@@ -34,7 +34,6 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
 
     private lateinit var camaraLayout: LinearLayout
-    private lateinit var closeCamaraBtn: Button
     private lateinit var previewView: PreviewView
     private lateinit var lottieAnimation: LottieAnimationView
     private lateinit var loadingLayout: LinearLayout

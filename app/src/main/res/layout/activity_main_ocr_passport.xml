@@ -5,163 +5,35 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".component.OcrPassportActivity">
+    tools:context=".component.MainOcrPassportActivity">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <ScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/white">
+            android:layout_weight="1">
 
-            <LinearLayout
-                android:id="@+id/contentLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:visibility="visible">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
-
-                    <Button
-                        android:id="@+id/captureImgBtn"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="@color/green"
-                        android:elevation="2dp"
-                        android:text="Capture"
-                        android:textColor="@android:color/white" />
-
-                    <Button
-                        android:id="@+id/galleryImgBtn"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="@color/green"
-                        android:elevation="2dp"
-                        android:text="Gallery"
-                        android:textColor="@android:color/white" />
-
-                    <Button
-                        android:id="@+id/realTimeBtn"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:backgroundTint="@color/green"
-                        android:elevation="2dp"
-                        android:text="Auto"
-                        android:textColor="@android:color/white" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-        </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/loadingLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/lottieAnimation"
-                android:layout_width="wrap_content"
-                android:layout_height="166dp"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                app:lottie_rawRes="@raw/wait_animation2" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/realTimeBtn"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/adlam_display"
-                android:text="Reading information"
-                android:textColor="@color/green"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/green"
+                android:elevation="2dp"
+                android:text="READ TRAVAL DOC (OCR + RFID)"
+                android:textColor="@android:color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/camaraLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <!-- Preview View ที่จะโชว์ภาพจากกล้อง -->
-                <androidx.camera.view.PreviewView
-                    android:id="@+id/preview_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-                <FrameLayout
-                    android:layout_width="340dp"
-                    android:layout_height="220dp"
-                    android:layout_gravity="center">
-
-                    <View
-                        android:id="@+id/scan_frame"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:background="@drawable/scan_frame_border" />
-                    <!-- เส้นที่เลื่อนผ่านสำหรับการสแกน -->
-                    <View
-                        android:id="@+id/scan_line"
-                        android:layout_width="295dp"
-                        android:layout_height="1dp"
-                        android:alpha="4"
-                        android:layout_gravity="center_horizontal|top"
-                        android:layout_marginTop="9dp"
-                        android:background="@color/white" />
-
-                    <TextView
-                        android:id="@+id/countdownTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="10"
-                        android:textSize="48sp"
-                        android:textColor="@android:color/white"
-                        android:textStyle="bold" />
-
-                </FrameLayout>
-
-
-                <!-- ปุ่มที่ทับซ้อนอยู่ด้านล่าง -->
-                <Button
-                    android:id="@+id/closeCamaraBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="16dp"
-                    android:backgroundTint="@color/green"
-                    android:elevation="2dp"
-                    android:text="Close Camera"
-                    android:textColor="@android:color/white" />
-            </FrameLayout>
-        </LinearLayout>
-
-
-    </FrameLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

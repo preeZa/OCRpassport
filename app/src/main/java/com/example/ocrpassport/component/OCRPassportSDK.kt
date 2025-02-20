@@ -18,61 +18,17 @@ import kotlinx.coroutines.TimeoutCancellationException
 
 class OCRPassportSDK(private val context: Context) {
 
-    private var currentPhotoPath: String? = null
+
     private var mrzData: MRZData? = null
 
     init {
         OpenCVInitializer.initialize()
     }
 
-    fun setCurrentPhotoPath(): File {
-        return ImageProcessor.createTempPhotoFile(context).also {
-            currentPhotoPath = it.absolutePath
-        }
-    }
-
     fun getMrzData(): MRZData? {
         return mrzData
     }
 
-    fun getCurrentPhotoPath(): String? {
-        return currentPhotoPath
-    }
-
-    suspend fun setOcrPassportUri(uri: Uri) {
-        try {
-            withTimeout(5000) {
-                val bitmap = ImageProcessor.uriToBitmap(context, uri)
-                if (bitmap != null) {
-                    setMrz(bitmap)
-                } else {
-                    Log.e("OCRPassportSDK", "Bitmap is null")
-                }
-            }
-        } catch (e: TimeoutCancellationException) {
-            Log.e("OCRPassportSDK", "Timeout occurred while processing URI", e)
-        } catch (e: Exception) {
-            Log.e("OCRPassportSDK", "Error processing URI: ${e.message}", e)
-        }
-    }
-    suspend fun setOcrPassportPath(path: String, reqWidth: Int, reqHeight: Int) {
-        try {
-            withTimeout(5000) {
-                val bitmap = ImageProcessor.decodeSampledBitmapFromFile(path, reqWidth, reqHeight)
-
-                val image: Bitmap = if (ModelPhone.isEDCorPhone()) {
-                    ImageProcessor.flipImage(bitmap, horizontal = true)
-                } else {
-                    ImageProcessor.rotateImage(bitmap, clockwise = true, isEDC = false)
-                }
-                setMrz(image)
-            }
-        } catch (e: TimeoutCancellationException) {
-            Log.e("OCRPassportSDK", "Timeout occurred while processing file path", e)
-        } catch (e: Exception) {
-            Log.e("OCRPassportSDK", "Error processing file path: ${e.message}", e)
-        }
-    }
 
     fun getFormatImage(imageProxy: ImageProxy): Bitmap {
         return ImageProcessor.formatImageRealTime(imageProxy)
@@ -89,7 +45,7 @@ class OCRPassportSDK(private val context: Context) {
                 val detectedText = MRZUtils.detectedImageText(textAll)
                 //                    setMrz(rotatedBitmap)
                 detectedText != "No valid MRZ lines found."
-            }else {
+            } else {
                 false
             }
         } else {
