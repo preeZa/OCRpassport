@@ -15,7 +15,14 @@
 - ✅ อ่านข้อมูลจากชิป NFC ในพาสปอร์ต
 - ✅ ดึงข้อมูลส่วนบุคคลและรูปภาพจาก NFC 
 
-**Code ตัวอย่าง:**
-
-
+**อธิบายการทำงาน**
+- MainOcrPassportActivity ใน activity นี้คือ
+  - การทำงานขอ permission กล้อง
+  - เปิด CameraPreviewActivity และรอรับ result
+  - เปิด NfcReadingActivity และรอรับ result
+  - show dialog result ที่ได้
+- CameraPreviewActivity ทำหน้าที่
+  - Scan traval doc แล้ว return กลับเป็นข้อมูลที่ิอยู่ใน mrz
+- NfcReadingActivity ทำหน้าที่
+  - ส่งข้อมูลไปยัง traval doc เพื่อดึงข้อมูลเพิ่มเติมที่แม่นยำจากชิป NFC ในพาสปอร์ แล้ว return result
 
