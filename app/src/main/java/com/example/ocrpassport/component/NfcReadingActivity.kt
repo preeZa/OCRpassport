@@ -6,25 +6,19 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
+import com.example.ocrpassport.component.models.PersonDetails
+import com.example.ocrpassport.component.util.DateUtil
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import net.sf.scuba.smartcards.CardService
 import org.jmrtd.BACKey
@@ -33,77 +27,42 @@ import org.jmrtd.lds.icao.DG1File
 import org.jmrtd.lds.icao.DG2File
 import org.jmrtd.lds.icao.MRZInfo
 import org.jmrtd.lds.iso19794.FaceImageInfo
-import org.jmrtd.lds.iso19794.FaceInfo
-
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
-
 
 class NfcReadingActivity : AppCompatActivity() {
     private lateinit var nfcAdapter: NfcAdapter
     private lateinit var countdownTextView: TextView
     private val resultIntent = Intent()
+    private var personDetails: PersonDetails = PersonDetails()
+    private lateinit var countdownTimer: CountDownTimer
+    private var isTimerRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nfc_reading)
         countdownTextView = findViewById(R.id.countDown_RFID_Txt)
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
 
-        val countdownTimer = object : CountDownTimer(60000, 1000) { // 10 วินาที
-            @SuppressLint("SetTextI18n")
-            override fun onTick(millisUntilFinished: Long) {
-                val seconds = (millisUntilFinished / 1000).toInt()
-                ObjectAnimator.ofFloat(countdownTextView, "alpha", 0f, 1f).apply {
-                    duration = 500
-                    start()
-                }
-                runOnUiThread {
-                    countdownTextView.text = seconds.toString()
-                }
-            }
-
-            override fun onFinish() {
-                countdownTextView.text = ""
-                val sampleMRZ = MRZData(
-                    TravelDoc = "P",
-                    DocumentNumber = "A12345678",
-                    IdGard = "123456789",
-                    Surname = "Doe",
-                    GivenNames = "John",
-                    Sex = "M",
-                    Nationality = "THA",
-                    DateOfBirth = "1990-01-01",
-                    ExpiryDate = "2030-01-01",
-                    Image = "https://img.freepik.com/free-photo/serious-young-african-man-standing-isolated_171337-9633.jpg" // หรือ Base64 String
-                )
-                resultIntent.putExtra("mrzData", sampleMRZ)
-                setResult(RESULT_OK, resultIntent)
-                finish()
-                return
-            }
-        }
-        countdownTimer.start()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        Log.d("NFC_DEBUG", "onNewIntent triggered with action: ${intent.action}")
 
         if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action ||
             NfcAdapter.ACTION_TAG_DISCOVERED == intent.action ||
             NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action) {
 
-            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
-            val isoDep = IsoDep.get(tag)
+            Log.d("NFC_DEBUG", "NFC Tag detected!")
 
-            tag?.let {
-                showBottomSheetDialog(this)
-                Log.d("NfcReadingActivity", "NFC Tag detected!")
-                Toast.makeText(this, "NFC Tag detected!", Toast.LENGTH_SHORT).show()
-                readPassport(isoDep)
-            }
+            val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG) ?: return
+            Log.d("NFC_DEBUG", "Tag: $tag")
+
+            val isoDep = IsoDep.get(tag)
+            readPassport(isoDep)
         }
     }
+
 
     private fun readPassport(isoDep: IsoDep?) {
         try {
@@ -117,110 +76,118 @@ class NfcReadingActivity : AppCompatActivity() {
             val birthDate = intent.getStringExtra("birthDate") ?: return
             val expiryDate = intent.getStringExtra("expiryDate") ?: return
 
+            Log.e("key", "passportNumber : $passportNumber , $birthDate , $expiryDate")
+
             val bacKey = BACKey(passportNumber, birthDate, expiryDate)
             val cardService = CardService.getInstance(isoDep)
-            val passportService = PassportService(cardService, PassportService.NORMAL_MAX_TRANCEIVE_LENGTH, PassportService.DEFAULT_MAX_BLOCKSIZE, true, false)
+            val passportService = PassportService(
+                cardService,
+                PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
+                PassportService.DEFAULT_MAX_BLOCKSIZE,
+                true,
+                false
+            )
             passportService.open()
 
-            // ใช้ BAC (Basic Access Control) สำหรับปลดล็อกการเข้าถึงข้อมูล
             passportService.sendSelectApplet(false)
             passportService.doBAC(bacKey)
+            try {
+                passportService.doBAC(bacKey)
+            } catch (e: Exception) {
+                if (e.message?.contains("Failed response") == true) {
+                    finish()
+                }
+            }
+            Log.e("passportService", "passportService : $passportService")
 
-            var image = ""
             val dg1InputStream: InputStream = passportService.getInputStream(PassportService.EF_DG1)
             val dg1File = DG1File(dg1InputStream)
             val mrzInfo: MRZInfo = dg1File.mrzInfo
+            personDetails.name = mrzInfo.secondaryIdentifier.replace("<", " ").trim { it <= ' ' }
+            personDetails.surname = mrzInfo.primaryIdentifier.replace("<", " ").trim { it <= ' ' }
+            personDetails.personalNumber = mrzInfo.personalNumber
+            personDetails.gender = mrzInfo.gender.toString()
+            personDetails.birthDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfBirth)
+            personDetails.expiryDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfExpiry)
+            personDetails.serialNumber = mrzInfo.documentNumber
+            personDetails.nationality = mrzInfo.nationality.replace("<", "")
+            personDetails.issuerAuthority = mrzInfo.issuingState.replace("<", "")
 
-            val dg2InputStream: InputStream = passportService.getInputStream(PassportService.EF_DG2)
-            val dg2File = DG2File(dg2InputStream)
+
+            val dg2In = passportService.getInputStream(PassportService.EF_DG2)
+            val dg2File = DG2File(dg2In)
+
             val faceInfos = dg2File.faceInfos
-            val allFaceImageInfos = mutableListOf<FaceImageInfo>()
-
+            val allFaceImageInfos: MutableList<FaceImageInfo> = ArrayList()
             for (faceInfo in faceInfos) {
                 allFaceImageInfos.addAll(faceInfo.faceImageInfos)
             }
-
             if (allFaceImageInfos.isNotEmpty()) {
-                val faceImageInfo = allFaceImageInfos.first()
-
-                val imageInputStream: InputStream = faceImageInfo.imageInputStream
-                // ใช้การอ่าน InputStream ทีละบล็อกเพื่อให้มั่นใจว่าอ่านครบถ้วน
-                val buffer = ByteArray(1024)
-                val byteArrayOutputStream = ByteArrayOutputStream()
-
-                var bytesRead: Int
-                while (imageInputStream.read(buffer).also { bytesRead = it } != -1) {
-                    byteArrayOutputStream.write(buffer, 0, bytesRead)
-                }
-
-                val imageBytes = byteArrayOutputStream.toByteArray()
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                image = bitmap.toString()
-                Log.d("NfcReadingActivity", "bitmap: $bitmap")
-
-
-            } else {
-                Log.e("NfcReadingActivity", "No face image found in DG2")
+                val faceImageInfo = allFaceImageInfos.iterator().next()
+                personDetails.faceImageInfo = faceImageInfo
             }
 
-//            Log.d("NfcReadingActivity", "Name: ${mrzInfo.secondaryIdentifier}, Surname: ${mrzInfo.primaryIdentifier}")
-//            Log.d("NfcReadingActivity", "Document No: ${mrzInfo.documentNumber}, Nationality: ${mrzInfo.nationality}")
-
-            val travalDoc = mrzInfo.documentType.toString()
-            val documentNumber = mrzInfo.documentNumber
-            val idGard = mrzInfo.personalNumber
-            val surname = mrzInfo.primaryIdentifier
-            val givenNames = mrzInfo.secondaryIdentifier
-            val sex = mrzInfo.gender
-            val nationality = mrzInfo.nationality
-            val dateOfBirth = mrzInfo.dateOfBirth
-            val dateOfExpiry = mrzInfo.dateOfExpiry
-
-            val sampleMRZ = MRZData(
-                TravelDoc = travalDoc,
-                DocumentNumber = documentNumber,
-                IdGard = idGard,
-                Surname = surname,
-                GivenNames = givenNames,
-                Sex = sex.toString(),
-                Nationality = nationality,
-                DateOfBirth = dateOfBirth,
-                ExpiryDate = dateOfExpiry,
-                Image = image
+            Log.d(
+                "NfcReadingActivity",
+                "documentCode: ${mrzInfo.documentCode}, issuingState: ${mrzInfo.issuingState}"
+            )
+            Log.d(
+                "NfcReadingActivity",
+                "optionalData2: ${mrzInfo.optionalData2}, optionalData1: ${mrzInfo.optionalData1}"
             )
 
-            Toast.makeText(this, "Passport Read: ${mrzInfo.primaryIdentifier} ${mrzInfo.secondaryIdentifier}", Toast.LENGTH_LONG).show()
-
-            Log.d("NfcReadingActivity", "sampleMRZ : $sampleMRZ")
 
             isoDep.close()
-
+            resultIntent.putExtra("mrzData", personDetails)
+            setResult(RESULT_OK, resultIntent)
+            finish()
 
         } catch (e: Exception) {
             Log.e("NfcReadingActivity", "Error reading passport: ${e.message}")
             e.printStackTrace()
         }
     }
+
     @SuppressLint("InflateParams")
     private fun showBottomSheetDialog(context: Context) {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_layout, null)
         bottomSheetDialog.setContentView(view)
-
-//        val btnClose = view.findViewById<Button>(R.id.btnClose)
-//        btnClose.setOnClickListener {
-//            bottomSheetDialog.dismiss()
-//        }
-
         bottomSheetDialog.show()
+    }
+
+    private fun startCountdown() {
+        if (isTimerRunning) return // ป้องกันการเรียกซ้ำ
+
+        isTimerRunning = true
+        countdownTimer = object : CountDownTimer(60000, 1000) { // 60 วินาที
+            @SuppressLint("SetTextI18n")
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = (millisUntilFinished / 1000).toInt()
+
+                runOnUiThread {
+                    ObjectAnimator.ofFloat(countdownTextView, "alpha", 0f, 1f).apply {
+                        duration = 500
+                        start()
+                    }
+                    countdownTextView.text = seconds.toString()
+                }
+            }
+
+            override fun onFinish() {
+                isTimerRunning = false
+                finish() // ปิด Activity ถ้านับครบ
+            }
+        }.start()
     }
 
 
     override fun onResume() {
         super.onResume()
-
-        if (!::nfcAdapter.isInitialized) {
-            return
+        startCountdown()
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this) ?: return
+        if (!nfcAdapter.isEnabled) {
+            Toast.makeText(this, "Please enable NFC", Toast.LENGTH_LONG).show()
         }
 
         val intent = Intent(this, javaClass).apply {
@@ -230,16 +197,20 @@ class NfcReadingActivity : AppCompatActivity() {
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
-        val techListArray = arrayOf(arrayOf(android.nfc.tech.IsoDep::class.java.name))
-
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, techListArray)
+        val techList = arrayOf(arrayOf(IsoDep::class.java.name))
+        showBottomSheetDialog(this)
+        nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, techList)
     }
+
 
     override fun onPause() {
         super.onPause()
+        countdownTimer.cancel()
+        isTimerRunning = false
         if (::nfcAdapter.isInitialized) {
             nfcAdapter.disableForegroundDispatch(this)
         }
     }
 
 }
+

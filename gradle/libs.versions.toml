@@ -10,6 +10,7 @@ foundation = "1.7.6"
 githubBlurview = "version-2.0.6"
 gson = "2.10.1"
 jmrtd = "0.7"
+jp2Android = "1.0.3"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -48,6 +49,7 @@ code-scanner = { module = "com.github.yuriy-budiyev:code-scanner", version.ref =
 eightbitlab-blurview = { module = "com.eightbitlab:blurview", version.ref = "blurviewVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jmrtd = { module = "org.jmrtd:jmrtd", version.ref = "jmrtd" }
+jp2-android = { module = "com.gemalto.jp2:jp2-android", version.ref = "jp2Android" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

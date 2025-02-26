@@ -142,10 +142,6 @@ object MRZUtils {
 
     private fun convertToMRZData(mrzRawValue: String): MRZData {
         val lines = mrzRawValue.split("\n")
-//        val lines = listOf(
-//            "P<GBRPUDARSAN<<HENERT<",
-//            "7077979792GBR950209F1704224<"
-//        )
         println("lines: $lines")
 
         if (lines.size < 2) {

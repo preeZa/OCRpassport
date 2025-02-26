@@ -14,9 +14,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
+import com.example.ocrpassport.component.models.PersonDetails
 
 class MainOcrPassportActivity : AppCompatActivity() {
     private lateinit var ocrPassportSDK: OCRPassportSDK
@@ -48,7 +48,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
         val intent = Intent(this, CameraPreviewActivity::class.java)
         activityResultLauncher.launch(intent)
 //        showBottomSheetDialog(this)
-//        startNfcReading("", "", "")
+//        startNfcReading("AA9676625" , "920805" , "230117")
     }
 
     private val activityResultLauncher =
@@ -87,7 +87,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
             Toast.makeText(this, "กรุณาเปิดใช้งาน NFC", Toast.LENGTH_LONG).show()
         } else {
             activityNFCResult.launch(nfcIntent)
-
         }
 //        activityNFCResult.launch(nfcIntent)
     }
@@ -95,7 +94,7 @@ class MainOcrPassportActivity : AppCompatActivity() {
     private val activityNFCResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
+                val mrzData = result.data?.getSerializableExtra("mrzData") as? PersonDetails
                 if (mrzData != null) {
 //                Log.d("activityResultLauncher", "mrzData: $mrzData")
                     showMRZDialog(this, mrzData)
@@ -110,18 +109,16 @@ class MainOcrPassportActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun showMRZDialog(context: Context, mrzData: MRZData) {
+    private fun showMRZDialog(context: Context, mrzData: PersonDetails?) {
         val builder = AlertDialog.Builder(context)
         val inflater = LayoutInflater.from(context)
         val dialogView = inflater.inflate(R.layout.dialog_mrz_data, null)
-
 
         val imageView = dialogView.findViewById<ImageView>(R.id.imageView)
         val textView = dialogView.findViewById<TextView>(R.id.textView)
 
         textView.text = mrzData.toString()
-        Glide.with(context).load(mrzData.Image).into(imageView)
-//        imageView.setImageBitmap()
+        imageView.setImageBitmap(mrzData!!.getPortraitImage())
 
         builder.setView(dialogView)
         builder.setPositiveButton("OK") { dialog, _ ->

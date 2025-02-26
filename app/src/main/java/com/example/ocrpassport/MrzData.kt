@@ -3,7 +3,7 @@ package com.example.ocrpassport
 import java.io.Serializable
 
 
-class MRZData(
+data class MRZData(
     val TravelDoc: String?,
     val DocumentNumber: String?,
     val IdGard: String?,
@@ -13,9 +13,10 @@ class MRZData(
     val Nationality: String?,
     val DateOfBirth: String?,
     val ExpiryDate: String?,
-    val Image: String?
-): Serializable
+    val Image: String?,
+) : Serializable
 {
+
     override fun toString(): String {
         return  "    TravelDoc = $TravelDoc\n" +
                 "    DocumentNumber = $DocumentNumber\n" +
@@ -25,7 +26,8 @@ class MRZData(
                 "    Sex = $Sex\n" +
                 "    Nationality = $Nationality\n" +
                 "    DateOfBirth = $DateOfBirth\n" +
-                "    ExpiryDate = $ExpiryDate\n"
+                "    ExpiryDate = $ExpiryDate\n" +
+                "    Image = $Image\n"
 
     }
 }

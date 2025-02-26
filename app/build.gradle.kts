@@ -67,10 +67,10 @@ dependencies {
     // json
     implementation (libs.gson)
 
-    //scaner_code
+    //scaner_code ui
     implementation (libs.code.scanner)
 
-    //Readable Travel Document
+    //Readable Travel Document nfc
     implementation ("net.sf.scuba:scuba-sc-android:0.0.18")
     implementation ("org.jmrtd:jmrtd:0.7.21")
 
@@ -79,8 +79,13 @@ dependencies {
     
     implementation(project(":openCV"))
 
+    // ui loading
     implementation (libs.lottie)
+    //j2000
+    implementation("dev.keiji.jp2:jp2-android:1.0.4")
+    implementation("com.github.mhshams:jnbis:1.1.0")
 
+    // await
     implementation (libs.play.services.tasks)
     implementation (libs.kotlinx.coroutines.play.services)
 
