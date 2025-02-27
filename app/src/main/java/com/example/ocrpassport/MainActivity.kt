@@ -2,13 +2,9 @@ package com.example.ocrpassport
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ocrpassport.component.MainOcrPassportActivity
-
-
-import org.opencv.android.OpenCVLoader
+import com.example.ocrpassport.component.activity.MainOcrPassportActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

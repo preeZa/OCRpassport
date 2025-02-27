@@ -1,4 +1,4 @@
-package com.example.ocrpassport.component
+package com.example.ocrpassport.component.activity
 
 import android.Manifest
 import android.content.Context
@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
+import com.example.ocrpassport.component.OCRPassportSDK
 import com.example.ocrpassport.component.models.PersonDetails
 
 class MainOcrPassportActivity : AppCompatActivity() {

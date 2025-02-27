@@ -1,4 +1,4 @@
-package com.example.ocrpassport.component
+package com.example.ocrpassport.component.activity
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieAnimationView
 import com.example.ocrpassport.MRZData
 import com.example.ocrpassport.R
+import com.example.ocrpassport.component.OCRPassportSDK
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

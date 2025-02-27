@@ -39,7 +39,6 @@ data class PersonDetails(
             if (this.portraitImageBase64 == null) {
                 return null
             }
-
             return ImageUtil.getImageFromBase64(this.portraitImageBase64!!)
         }
 

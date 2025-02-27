@@ -1,4 +1,4 @@
-package com.example.ocrpassport.component
+package com.example.ocrpassport.component.activity
 
 
 import android.animation.ObjectAnimator
@@ -42,7 +42,6 @@ class NfcReadingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_nfc_reading)
         countdownTextView = findViewById(R.id.countDown_RFID_Txt)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -62,7 +61,6 @@ class NfcReadingActivity : AppCompatActivity() {
             readPassport(isoDep)
         }
     }
-
 
     private fun readPassport(isoDep: IsoDep?) {
         try {
@@ -136,7 +134,6 @@ class NfcReadingActivity : AppCompatActivity() {
                 "optionalData2: ${mrzInfo.optionalData2}, optionalData1: ${mrzInfo.optionalData1}"
             )
 
-
             isoDep.close()
             resultIntent.putExtra("mrzData", personDetails)
             setResult(RESULT_OK, resultIntent)
@@ -157,7 +154,7 @@ class NfcReadingActivity : AppCompatActivity() {
     }
 
     private fun startCountdown() {
-        if (isTimerRunning) return // ป้องกันการเรียกซ้ำ
+        if (isTimerRunning) return
 
         isTimerRunning = true
         countdownTimer = object : CountDownTimer(60000, 1000) { // 60 วินาที
@@ -176,11 +173,10 @@ class NfcReadingActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 isTimerRunning = false
-                finish() // ปิด Activity ถ้านับครบ
+                finish()
             }
         }.start()
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -200,8 +196,8 @@ class NfcReadingActivity : AppCompatActivity() {
         val techList = arrayOf(arrayOf(IsoDep::class.java.name))
         showBottomSheetDialog(this)
         nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, techList)
-    }
 
+    }
 
     override fun onPause() {
         super.onPause()
