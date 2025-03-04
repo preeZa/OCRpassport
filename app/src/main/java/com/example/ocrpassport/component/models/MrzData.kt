@@ -1,4 +1,4 @@
-package com.example.ocrpassport
+package com.example.ocrpassport.component.models
 
 import java.io.Serializable
 

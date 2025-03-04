@@ -18,7 +18,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieAnimationView
-import com.example.ocrpassport.MRZData
+import com.example.ocrpassport.component.models.MRZData
 import com.example.ocrpassport.R
 import com.example.ocrpassport.component.OCRPassportSDK
 import kotlinx.coroutines.CoroutineScope

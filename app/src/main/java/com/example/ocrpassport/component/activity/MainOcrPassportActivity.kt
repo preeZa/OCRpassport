@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ocrpassport.MRZData
+import com.example.ocrpassport.component.models.MRZData
 import com.example.ocrpassport.R
 import com.example.ocrpassport.component.OCRPassportSDK
 import com.example.ocrpassport.component.models.PersonDetails
@@ -48,8 +48,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
     private fun startCamera() {
         val intent = Intent(this, CameraPreviewActivity::class.java)
         activityResultLauncher.launch(intent)
-//        showBottomSheetDialog(this)
-//        startNfcReading("AA9676625" , "920805" , "230117")
     }
 
     private val activityResultLauncher =
@@ -65,7 +63,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
                     )
                 }
             } else {
-//                showErrorDialog()
                 startNfcReading("", "", "")
             }
         }
@@ -89,7 +86,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
         } else {
             activityNFCResult.launch(nfcIntent)
         }
-//        activityNFCResult.launch(nfcIntent)
     }
 
     private val activityNFCResult =
@@ -97,7 +93,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val mrzData = result.data?.getSerializableExtra("mrzData") as? PersonDetails
                 if (mrzData != null) {
-//                Log.d("activityResultLauncher", "mrzData: $mrzData")
                     showMRZDialog(this, mrzData)
                 }
             } else {

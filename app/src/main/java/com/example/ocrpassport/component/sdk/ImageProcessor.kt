@@ -1,6 +1,5 @@
 package com.example.ocrpassport.component.sdk
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -8,8 +7,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.camera.core.ImageProxy
 import org.opencv.android.Utils
@@ -20,9 +17,6 @@ import org.opencv.core.MatOfDouble
 import org.opencv.core.MatOfPoint
 import org.opencv.core.MatOfPoint2f
 import org.opencv.imgproc.Imgproc
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.math.pow
 
 object ImageProcessor {
@@ -180,18 +174,4 @@ object ImageProcessor {
         return variance > threshold
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val (height: Int, width: Int) = options.outHeight to options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight: Int = height / 2
-            val halfWidth: Int = width / 2
-
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-        return inSampleSize
-    }
 }

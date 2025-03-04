@@ -48,17 +48,6 @@ object ImageUtil {
         return image
     }
 
-    fun scaleImage(bitmap: Bitmap?): Bitmap? {
-        var bitmapImage: Bitmap? = null
-        if (bitmap != null) {
-            val ratio = 400.0 / bitmap.height
-            val targetHeight = (bitmap.height * ratio).toInt()
-            val targetWidth = (bitmap.width * ratio).toInt()
-            bitmapImage = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, false)
-        }
-        return bitmapImage
-    }
-
     fun getImageFromBase64(base64: String): Bitmap {
         return decodeImage("image/jpeg", Base64.decode(base64, Base64.DEFAULT).inputStream())
     }

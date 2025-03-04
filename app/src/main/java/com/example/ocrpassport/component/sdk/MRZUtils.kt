@@ -2,14 +2,13 @@ package com.example.ocrpassport.component.sdk
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.ocrpassport.MRZData
+import com.example.ocrpassport.component.models.MRZData
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.util.Calendar
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -83,63 +82,6 @@ object MRZUtils {
         }
     }
 
-    private fun formatDate(data: String, isExpirationDate: Boolean = false): String {
-        try {
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-            val currentYearShort = currentYear % 100
-            val firstTwoDigits = currentYear / 100   // 20 (จาก 2025)
-            val previousCentury = firstTwoDigits - 1 // 19 (ศตวรรษก่อนหน้า)
-            val nextCentury = firstTwoDigits + 1     // 21 (ศตวรรษถัดไป)
-
-            if (data.length != 6) {
-                throw IllegalArgumentException("Invalid day: $data")
-            }
-
-            val birthYearPrefix = data.substring(0, 2).toInt()
-
-
-            val yearPrefix = when {
-                isExpirationDate -> {
-                    // กรณีวันหมดอายุ (เช่น 99 ควรเป็น 2099)
-                    if (birthYearPrefix >= currentYearShort) firstTwoDigits
-                    else nextCentury
-                }
-                else -> {
-                    // กรณีวันเกิด (เช่น 99 อาจเป็น 1999 หรือ 2099)
-                    if (birthYearPrefix > currentYearShort) previousCentury
-                    else firstTwoDigits
-                }
-            }
-            val year = "$yearPrefix$birthYearPrefix"
-            val month = data.substring(2, 4)
-            val day = data.substring(4, 6)
-
-            if (month.toInt() !in 1..12) {
-                throw IllegalArgumentException("Invalid month: $month")
-            }
-            if (day.toInt() !in 1..31) {
-                throw IllegalArgumentException("Invalid day: $day")
-            }
-
-            val formattedDate = "$year-$month-$day"
-            return formattedDate
-
-        } catch (e: StringIndexOutOfBoundsException) {
-            Log.e("MRZUtils", "Incomplete data: ${e.message}")
-            return ""
-        } catch (e: NumberFormatException) {
-            Log.e("MRZUtils", "Cannot convert data to number: ${e.message}")
-            return ""
-        } catch (e: IllegalArgumentException) {
-            Log.e("MRZUtils", "Error: ${e.message}")
-            return ""
-        } catch (e: Exception) {
-            Log.e("MRZUtils", "Unexpected error: ${e.message}")
-            return ""
-        }
-
-    }
-
     private fun convertToMRZData(mrzRawValue: String): MRZData {
         val lines = mrzRawValue.split("\n")
         println("lines: $lines")
@@ -164,12 +106,9 @@ object MRZUtils {
         }
 
         line2 = line2.replace(" ", "").trim()
-        println("line1: $line1")
-        println("line2: $line2")
 
         val passportNumber = line2.substring(0, 9).trim().uppercase()
         val nationality = line2.substring(10, 13).trim()
-//        val dateOfBirth = formatDate(line2.substring(13, 19).trim())
         val dateOfBirth = line2.substring(13, 19).trim()
 
 
@@ -180,7 +119,6 @@ object MRZUtils {
         }
 
         val expirationDate = if (genderIndex != -1 && genderIndex + 6 < line2.length) {
-//            formatDate(line2.substring(genderIndex + 1, genderIndex + 7),true)  // 230117
             line2.substring(genderIndex + 1, genderIndex + 7)
         } else {
             ""
