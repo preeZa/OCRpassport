@@ -14,9 +14,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ocrpassport.component.models.MRZData
 import com.example.ocrpassport.R
 import com.example.ocrpassport.component.OCRPassportSDK
+import com.example.ocrpassport.component.models.MRZData
 import com.example.ocrpassport.component.models.PersonDetails
 
 class MainOcrPassportActivity : AppCompatActivity() {
@@ -56,14 +56,28 @@ class MainOcrPassportActivity : AppCompatActivity() {
                 val mrzData = result.data?.getSerializableExtra("mrzData") as? MRZData
                 if (mrzData != null) {
                     Log.d("activityResultLauncher", "mrzData: $mrzData")
-                    startNfcReading(
-                        mrzData.DocumentNumber.toString(),
-                        mrzData.DateOfBirth.toString(),
-                        mrzData.ExpiryDate.toString()
-                    )
+                    if (mrzData.DocumentNumber.toString() == "" ||
+                        mrzData.DateOfBirth.toString() == "" ||
+                        mrzData.ExpiryDate.toString() == ""
+                    ) {
+
+                        Toast.makeText(
+                            this@MainOcrPassportActivity,
+                            "ข้อมูลหนังสือเดินทางไม่ครบถ้วน",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                    } else {
+                        startNfcReading(
+                            mrzData.DocumentNumber.toString(),
+                            mrzData.DateOfBirth.toString(),
+                            mrzData.ExpiryDate.toString()
+                        )
+                    }
+
                 }
             } else {
-                startNfcReading("", "", "")
+                showErrorDialog()
             }
         }
 

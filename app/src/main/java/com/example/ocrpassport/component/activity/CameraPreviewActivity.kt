@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -52,6 +53,13 @@ class CameraPreviewActivity : AppCompatActivity() {
         }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                stopCamera()
+                finish()
+            }
+        })
         ocrPassportSDK = OCRPassportSDK(this)
         setContentView(R.layout.activity_camera_preview)
 
@@ -203,7 +211,7 @@ class CameraPreviewActivity : AppCompatActivity() {
             e.printStackTrace()
         } finally {
             finish()
-            isLoading = false
+//            isLoading = false
         }
     }
     private fun updateLoadingState() {
@@ -218,4 +226,5 @@ class CameraPreviewActivity : AppCompatActivity() {
             camaraLayout.visibility = View.VISIBLE
         }
     }
+
 }

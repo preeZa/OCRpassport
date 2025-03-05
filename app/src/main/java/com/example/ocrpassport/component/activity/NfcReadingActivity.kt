@@ -46,6 +46,7 @@ class NfcReadingActivity : AppCompatActivity() {
     private val resultIntent = Intent()
     private var personDetails: PersonDetails = PersonDetails()
     private var countdownTimer: CountDownTimer? = null
+    private var isShowBottonSheet = true
     private var isTimerRunning = false
     private var isLoading: Boolean = false
         set(value) {
@@ -77,12 +78,13 @@ class NfcReadingActivity : AppCompatActivity() {
             Log.d("NFC_DEBUG", "Tag: $tag")
 
             val isoDep = IsoDep.get(tag)
+            isShowBottonSheet = false
+            dismissBottomSheet()
             readPassport(isoDep)
         }
     }
 
     private fun readPassport(isoDep: IsoDep?) {
-        dismissBottomSheet()
         isLoading = true
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -94,6 +96,14 @@ class NfcReadingActivity : AppCompatActivity() {
 
                 withTimeout(5000) {
                     isoDep.connect()
+                }
+                if (!isoDep.isConnected) {
+                    Log.e("NfcReadingActivity", "NFC Connection Lost")
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@NfcReadingActivity, "การเชื่อมต่อ NFC ขาดหาย", Toast.LENGTH_LONG).show()
+                        finish()
+                    }
+                    return@launch
                 }
 
                 val passportNumber = intent.getStringExtra("passportNumber")
@@ -109,65 +119,92 @@ class NfcReadingActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                Log.e("key", "passportNumber : $passportNumber , $birthDate , $expiryDate")
+                Log.d("NfcReadingActivity", "Passport Data: $passportNumber, $birthDate, $expiryDate")
 
                 val bacKey = BACKey(passportNumber, birthDate, expiryDate)
-                val cardService = CardService.getInstance(isoDep)
-                val passportService = PassportService(
-                    cardService,
-                    PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
-                    PassportService.DEFAULT_MAX_BLOCKSIZE,
-                    true,
-                    false
-                )
 
-                try {
-                    passportService.open()
-                    passportService.sendSelectApplet(false)
-                    passportService.doBAC(bacKey)
+                isoDep.use {
+                    val cardService = CardService.getInstance(isoDep)
+                    val passportService = PassportService(
+                        cardService,
+                        PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
+                        PassportService.DEFAULT_MAX_BLOCKSIZE,
+                        true,
+                        false
+                    )
 
-                    Log.e("passportService", "passportService : $passportService")
+                    try {
+                        passportService.open()
+                        Log.d("NfcReadingActivity", "Passport Service opened successfully")
 
-                    val dg1File = DG1File(passportService.getInputStream(PassportService.EF_DG1))
-                    val mrzInfo: MRZInfo = dg1File.mrzInfo
+                        passportService.sendSelectApplet(false)
+                        Log.d("NfcReadingActivity", "Applet selected successfully")
 
-                    personDetails.name = mrzInfo.secondaryIdentifier.replace("<", " ").trim()
-                    personDetails.surname = mrzInfo.primaryIdentifier.replace("<", " ").trim()
-                    personDetails.personalNumber = mrzInfo.personalNumber
-                    personDetails.gender = mrzInfo.gender.toString()
-                    personDetails.birthDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfBirth)
-                    personDetails.expiryDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfExpiry)
-                    personDetails.serialNumber = mrzInfo.documentNumber
-                    personDetails.nationality = mrzInfo.nationality.replace("<", "")
-                    personDetails.issuerAuthority = mrzInfo.issuingState.replace("<", "")
+                        var bacSuccess = false
+                        for (attempt in 1..3) {
+                            try {
+                                passportService.doBAC(bacKey)
+                                Log.d("NfcReadingActivity", "BAC completed successfully on attempt $attempt")
+                                bacSuccess = true
+                                break
+                            } catch (e: Exception) {
+                                Log.e("NfcReadingActivity", "BAC failed attempt $attempt: ${e.message}")
+                                if (e.message?.contains("BAC failed") == true) {
+                                    Log.e("NfcReadingActivity", "BAC Invalid - Stopping process")
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(this@NfcReadingActivity, "BAC ไม่ถูกต้อง", Toast.LENGTH_LONG).show()
+                                        finish()
+                                    }
+                                    return@use
+                                }
+                            }
+                        }
 
-                    val dg2File = DG2File(passportService.getInputStream(PassportService.EF_DG2))
+                        if (!bacSuccess) {
+                            Log.e("NfcReadingActivity", "BAC failed after 3 attempts")
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@NfcReadingActivity, "การตรวจสอบ BAC ล้มเหลว", Toast.LENGTH_LONG).show()
+                                finish()
+                            }
+                            return@use
+                        }
 
-                    val allFaceImageInfos: MutableList<FaceImageInfo> = ArrayList()
-                    for (faceInfo in dg2File.faceInfos) {
-                        allFaceImageInfos.addAll(faceInfo.faceImageInfos)
+                        val dg1File = DG1File(passportService.getInputStream(PassportService.EF_DG1))
+                        val mrzInfo: MRZInfo = dg1File.mrzInfo
+
+                        personDetails.name = mrzInfo.secondaryIdentifier.replace("<", " ").trim()
+                        personDetails.surname = mrzInfo.primaryIdentifier.replace("<", " ").trim()
+                        personDetails.personalNumber = mrzInfo.personalNumber
+                        personDetails.gender = mrzInfo.gender.toString()
+                        personDetails.birthDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfBirth)
+                        personDetails.expiryDate = DateUtil.convertFromMrzDate(mrzInfo.dateOfExpiry)
+                        personDetails.serialNumber = mrzInfo.documentNumber
+                        personDetails.nationality = mrzInfo.nationality.replace("<", "")
+                        personDetails.issuerAuthority = mrzInfo.issuingState.replace("<", "")
+
+                        val dg2File = DG2File(passportService.getInputStream(PassportService.EF_DG2))
+                        val allFaceImageInfos = dg2File.faceInfos.flatMap { it.faceImageInfos }
+                        if (allFaceImageInfos.isNotEmpty()) {
+                            personDetails.faceImageInfo = allFaceImageInfos.first()
+                        }
+
+                        resultIntent.putExtra("mrzData", personDetails)
+
+                        withContext(Dispatchers.Main) {
+                            setResult(RESULT_OK, resultIntent)
+                            finish()
+                        }
+
+                    } catch (e: Exception) {
+                        Log.e("NfcReadingActivity", "Error reading passport: ${e.message}")
+                        e.printStackTrace()
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@NfcReadingActivity, "เกิดข้อผิดพลาดขณะอ่านพาสปอร์ต", Toast.LENGTH_LONG).show()
+                            finish()
+                        }
                     }
-
-                    if (allFaceImageInfos.isNotEmpty()) {
-                        personDetails.faceImageInfo = allFaceImageInfos.first()
-                    }
-
-                    isoDep.close()
-                    resultIntent.putExtra("mrzData", personDetails)
-
-                    withContext(Dispatchers.Main) {
-                        setResult(RESULT_OK, resultIntent)
-                        finish()
-                    }
-
-                } catch (e: Exception) {
-                    if (e.message?.contains("Failed response") == true) {
-                        withContext(Dispatchers.Main) { finish() }
-                    }
-                    Log.e("NfcReadingActivity", "Error reading passport: ${e.message}")
-                    e.printStackTrace()
                 }
-
             } catch (e: TimeoutCancellationException) {
                 Log.e("NfcReadingActivity", "NFC Connection Timeout")
                 withContext(Dispatchers.Main) {
@@ -179,7 +216,7 @@ class NfcReadingActivity : AppCompatActivity() {
                 e.printStackTrace()
             } finally {
                 withContext(Dispatchers.Main) {
-                    isLoading = false
+                    finish()
                 }
             }
         }
@@ -239,7 +276,9 @@ class NfcReadingActivity : AppCompatActivity() {
         if (!nfcAdapter.isEnabled) {
             Toast.makeText(this, "Please enable NFC", Toast.LENGTH_LONG).show()
         }
-        showBottomSheetDialog(this)
+        if (isShowBottonSheet) {
+            showBottomSheetDialog(this)
+        }
         val intent = Intent(this, javaClass).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
