@@ -60,7 +60,6 @@ class MainOcrPassportActivity : AppCompatActivity() {
                         mrzData.DateOfBirth.toString() == "" ||
                         mrzData.ExpiryDate.toString() == ""
                     ) {
-
                         Toast.makeText(
                             this@MainOcrPassportActivity,
                             "ข้อมูลหนังสือเดินทางไม่ครบถ้วน",
